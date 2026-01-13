@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee" version="5.0">
+
+ <deny-uncovered-http-methods/>
+ 
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Control endpoints</web-resource-name>
+      <url-pattern>/control/*</url-pattern>
+      <http-method>GET</http-method>
+      <http-method>POST</http-method>            
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>cics-user</role-name>
+    </auth-constraint>
+  </security-constraint>
+    
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>CICSRealm</realm-name>
+  </login-config>
+
+  <security-role>
+    <role-name>cics-user</role-name>
+  </security-role>
+</web-app>

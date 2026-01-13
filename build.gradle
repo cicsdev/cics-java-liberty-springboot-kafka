@@ -1,0 +1,72 @@
+plugins 
+{
+    id 'org.springframework.boot' version '3.5.8'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'eclipse'
+    id 'war'
+    id 'idea'    
+}
+
+group = 'com.ibm.cicsdev'
+version = '1.0.0'
+
+// ============================================================================
+// Java Configuration
+// ============================================================================
+java {
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = JavaVersion.toVersion(javaVersion)
+}
+
+// ============================================================================
+// WAR Configuration
+// ============================================================================
+war {
+    archiveFileName = 'cics-java-liberty-springboot-kafka.war'
+}
+
+// Two versions of the WAR would be built, one for embedding into servers like Liberty (plain)
+// and a bootWAR which can run standalone and contains all the Tomcat and Spring Boot stuff 
+// we don't need bootWAR, so disable it.
+bootWar { enabled = false }
+
+// If in Eclipse, add Javadoc to the local project classpath
+eclipse
+{
+    classpath
+    {
+        downloadJavadoc = true
+    }
+}
+
+repositories
+{
+    mavenCentral()                
+}
+
+dependencies 
+{
+
+    // BOM: CICS TS V6.3
+    compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:${cicsBomVersion}")
+
+    // Spring Boot Web-starter
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    
+    // Don't include Tomcat in the runtime build, but do put it in WEB-INF so it can be run standalone as well as embedded
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat") 
+                
+	// Spring Boot Kafka client - with optimised removals
+    implementation("org.springframework.kafka:spring-kafka")         
+                           
+    // Jakarta EE 10 version of ManagedExecutorService we compiler against                            
+    compileOnly("jakarta.platform:jakarta.jakartaee-api:${jakartaVersion}")
+        
+    // Liberty developer SPI/APIs - WSSubject, WSCallbackHandler (JAAS), AuthData
+    compileOnly("net.wasdev.maven.tools.targets:liberty-apis:${libertyApisVersion}")       
+                      
+    // Compile against, but don't include JCICS in the final build (no need for version because we have BOM)
+    compileOnly("com.ibm.cics:com.ibm.cics.server")       
+}
+

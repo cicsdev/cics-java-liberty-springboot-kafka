@@ -1,0 +1,119 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <!-- Inherit defaults from Spring Boot Parent -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.8</version>
+    <relativePath/>
+  </parent>
+  
+  <!-- ================================================================ -->
+  <!-- Project Coordinates                                              -->
+  <!-- ================================================================ -->
+  <groupId>com.ibm.cicsdev.springboot</groupId>
+  <artifactId>cics-java-liberty-springboot-kafka</artifactId>
+  <version>0.0.1</version>
+  <description>Demo project for Spring Boot Kafka</description>
+  
+  <properties>
+    <java.version>17</java.version>
+    
+    <!-- Jakarta -->
+    <jakartaee.version>10.0.0</jakartaee.version>
+    
+    <!-- Liberty / IBM -->
+	<liberty.apis.version>25.0.0.9</liberty.apis.version>
+   	
+   	<!-- CICS BOM -->
+    <cics.bom.version>6.3-20250905155520</cics.bom.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+  </properties>
+   
+
+<dependencyManagement>
+        <dependencies>
+			
+            <!-- CICS TS 6.3 BOM -->
+            <dependency>
+                <groupId>com.ibm.cics</groupId>
+                <artifactId>com.ibm.cics.ts.bom</artifactId>
+                <version>${cics.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+    
+  <!-- ================================================================ -->
+  <!-- Dependencies                                                     -->
+  <!-- ================================================================ -->  
+  <dependencies>
+		<!-- Spring Boot web support -->   
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+		<!-- Compile against, but don't include TomCat in the runtime build --> 
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- Jakarta EE 10 APIs (compile only, Liberty provides runtime) -->
+    <dependency>
+		<groupId>jakarta.platform</groupId>
+        <artifactId>jakarta.jakartaee-api</artifactId>
+        <version>${jakartaee.version}</version>
+        <scope>provided</scope>
+    </dependency>
+
+	<!-- Spring Kafka -->
+    <dependency>
+		<groupId>org.springframework.kafka</groupId>
+		<artifactId>spring-kafka</artifactId>
+    </dependency>
+	
+	<!-- Liberty Security APIs (WSSubject, JAAS, AuthData) -->
+	<dependency>
+		<groupId>net.wasdev.maven.tools.targets</groupId>
+		<artifactId>liberty-apis</artifactId>
+        <version>${liberty.apis.version}</version>
+        <type>pom</type>
+        <scope>provided</scope>
+    </dependency>
+
+	<!-- JCICS APIs (compile only, provided by CICS runtime) -->
+	<dependency>
+		<groupId>com.ibm.cics</groupId>
+		<artifactId>com.ibm.cics.server</artifactId>
+        <scope>provided</scope>
+    </dependency>
+
+	<!-- Exclude Spring Boot logging (Liberty JUL handles logging) -->
+    <dependency>
+		<groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-logging</artifactId>
+        <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+	<!-- Package as an executable war (default is jar) -->
+  <packaging>war</packaging>
+  <build>
+    <plugins>
+       <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+       </plugin>
+    </plugins>
+  </build>
+</project>
