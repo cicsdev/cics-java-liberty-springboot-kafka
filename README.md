@@ -245,8 +245,6 @@ Reduces application-level security handling
 Is preferred when credentials must not appear in application code
 Aligns well with operationally managed environments
 
-When Option B is used, the Subject-based RunAs logic should be disabled or bypassed to avoid conflicting identity models.
-
 server.xml configuration (Option B only)
 
 Option B only: authData-based Kafka credentials        
