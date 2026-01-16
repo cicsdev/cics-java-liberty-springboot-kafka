@@ -209,8 +209,8 @@ Kafka consumers execute on application-managed background threads, so security i
 
 Two supported approaches are documented:
 
-Option A: Subject-based RunAs identity (default)
-Option B: authData-based identity (alternative)
+- Option A: Subject-based RunAs identity (default)
+- Option B: authData-based identity (alternative)
 
 Only one option should be used at a time.
 
