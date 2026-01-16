@@ -122,6 +122,7 @@ The Gradle wrapper included in this project uses Gradle 8.x, which fully support
     - `<servlet-6.0>` depending on the version of Java EE in use.  
     - `<cicsts:security-1.0>` if CICS security is enabled.
 
+``` XML
 <featureManager>
         <feature>appSecurity-5.0</feature>
         <feature>cicsts:security-1.0</feature>
@@ -129,6 +130,7 @@ The Gradle wrapper included in this project uses Gradle 8.x, which fully support
         <feature>servlet-6.0</feature>
         <feature>jdbc-4.3</feature>
 </featureManager>
+```
 
 Deployment option 1:
 
@@ -158,7 +160,10 @@ Manually upload the WAR file to zFS and add an <application> element to the Libe
 
 Kafka consumers will start on application-managed background threads during application initialisation.
 
-Make the kafka consumer start/stop using - http://<url>/cics-java-liberty-springboot-kafka/control/start?topic=<topic-name> or http://<url>/cics-java-liberty-springboot-kafka/control/stop?topic=<topic-name>
+Make the kafka consumer start/stop using - 
+```XML
+http://<url>/cics-java-liberty-springboot-kafka/control/start?topic=<topic-name> or http://<url>/cics-java-liberty-springboot-kafka/control/stop?topic=<topic-name>
+```
 
 ---
 
@@ -249,7 +254,7 @@ server.xml configuration (Option B only)
 
 Option B only: authData-based Kafka credentials        
 
-
+```XML
 <server>
   <featureManager>
     <feature>appSecurity-5.0</feature>
@@ -260,6 +265,7 @@ Option B only: authData-based Kafka credentials
     <feature>passwordUtilities-1.0</feature>
     <feature>zosPasswordEncryptionKey-1.0</feature>
   </featureManager>
+  
 
   <!-- Obtain AES key from RACF key ring at runtime -->
   <zosPasswordEncryptionKey
