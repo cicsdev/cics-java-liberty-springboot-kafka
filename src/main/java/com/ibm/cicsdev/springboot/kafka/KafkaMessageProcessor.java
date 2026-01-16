@@ -55,7 +55,7 @@ public class KafkaMessageProcessor
      */
     public void processAsynchronous(ConsumerRecord<String, String> record)
     {
-        LOG.fine(() -> "Received message from topic " + record.topic() + ": " + record.value());
+        LOG.info(() -> "Received message from topic " + record.topic() + ": " + record.value());
         executor.submit(new KafkaCICSTransactionRunnable(record, config));
     }
 

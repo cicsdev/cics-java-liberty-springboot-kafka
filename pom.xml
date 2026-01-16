@@ -98,17 +98,12 @@
         <scope>provided</scope>
     </dependency>
 
-	<!-- Exclude Spring Boot logging (Liberty JUL handles logging) -->
-    <dependency>
-		<groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-logging</artifactId>
-        <scope>provided</scope>
-    </dependency>
   </dependencies>
 
 	<!-- Package as an executable war (default is jar) -->
   <packaging>war</packaging>
   <build>
+	<finalName>cics-java-liberty-springboot-kafka</finalName>
     <plugins>
        <plugin>
           <groupId>org.springframework.boot</groupId>

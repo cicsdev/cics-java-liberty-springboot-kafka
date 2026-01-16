@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<server description="CICS Liberty sample configuration">
+    <!-- Enable features -->
+    <featureManager>
+    	<feature>appSecurity-5.0</feature>
+        <feature>cicsts:security-1.0</feature>
+		<feature>concurrent-3.0</feature>
+		<feature>servlet-6.0</feature>
+		<feature>jdbc-4.3</feature>
+        <!-- <feature>passwordUtilities-1.0</feature>
+        <feature>zosPasswordEncryptionKey-1.0</feature> -->
+	</featureManager>
+		    
+	<!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                  httpPort="9080"
+                  httpsPort="9443" />
+    
+    <!-- The following configuration controls how often server.xml
+         is scanned for updates. The default is every 500ms which may
+         cause excessive I/O and CPU cost on z/OS.
+         The values shown below reduce the overhead while still
+         providing a relatively timely detection of new applications
+         that have been installed/removed via a CICS Bundle
+         (WAR bundlepart). If you use CICS bundles to install Web
+         Applications (WAR files) do not use the "disabled"
+         updateTrigger.
+    -->
+    <config monitorInterval="5s" updateTrigger="polled"/>
+    
+    <!-- The application start timeout specifies the maximum
+         amount of time the server waits for applications
+         to start before the server becomes available.
+         If there are lots of applications installed and startup
+         takes too long you may need to increase this value.
+    -->
+    <applicationManager startTimeout="60s"/>
+    
+    <!-- Further scanning is performed to detect application updates or
+         addition/removal of applications to the dropins directory. If
+         you are using CICS Bundles as the vehicle for Application
+         deployment you should disable the dropins directory as shown.
+         Further I/O and CPU reduction can be achieved by disabling
+         the application scan. To effect changes to your applications
+         while the server is still running, you should disable and
+         re-enable the CICS bundle that contains the Web application.
+         The pollingRate is only applicable when the updateTrigger is
+         set to the 'polled' value.
+         Consult the WebSphere Application Server Liberty Profile
+         documentation for further information on these parameters.
+    -->
+    <applicationMonitor dropins="dropins" dropinsEnabled="false" pollingRate="5s" updateTrigger="disabled"/>
+    <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
+        <application-bnd>
+            <security-role name="cics-user">
+                <special-subject type="ALL_AUTHENTICATED_USERS"/>
+            </security-role>
+        </application-bnd>
+    </application>
+    
+    <!-- Obtain AES key from RACF key ring at runtime --> 
+    <!--  <zosPasswordEncryptionKey keyring="safkeyring:///YOUR.KEYRING" label="Liberty" type="JCERACFKS"/>  -->
+        
+    <!-- Option B: Credentials alias (AES-protected) --> 
+    <!-- <authData id="cicsSAF" user="<user_id>" password="{aes}ARI673meZr9vy...." /> -->    
+    
+    <!--  (Optional) Use RACF key ring as SSL keystore  -->
+    <!-- <keyStore fileBased="false" id="defaultKeyStore" location="safkeyring:///YOUR.KEYRING" password="password" readOnly="true" type="JCERACFKS"/> -->
+    
+    <ssl clientAuthenticationSupported="true" id="defaultSSLConfig" keyStoreRef="defaultKeyStore" sslProtocol="TLSv1.3,TLSv1.2"/>   
+    <cdi enableImplicitBeanArchives="false"/>
+    <include id="cics_auto" location="${server.config.dir}/installedApps.xml" onConflict="IGNORE"/>
+    <safRegistry enableFailover="false" id="saf"/>
+    <executor coreThreads="8" id="allowCICSconfigure" maxThreads="50"/>
+</server>
