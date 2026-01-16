@@ -215,10 +215,10 @@ This is the default approach implemented in the sample code. The application exp
 
 Key characteristics:
 
-A Subject representing the service identity is obtained during application initialisation
-The identity is applied using WSSubject.setRunAsSubject(subject)
-The RunAs subject is set once per consumer thread and reused for subsequent processing
-Previous identity state is captured and managed explicitly
+A Subject representing the service identity is obtained during application initialisation.
+The identity is applied using WSSubject.setRunAsSubject(subject).
+The RunAs subject is set once per consumer thread and reused for subsequent processing.
+Previous identity state is captured and managed explicitly.
 
 This approach:
 
@@ -233,17 +233,16 @@ As an alternative to Subject-based RunAs identity, the sample can be configured 
 
 In this model:
 
-Service credentials are defined declaratively in server.xml
-The application references the configured authData by name
-Liberty manages credential lookup and association
-No explicit Subject or RunAs switching is performed in application code
+* Service credentials are defined declaratively in server.xml
+* The application references the configured authData by name
+* Liberty manages credential lookup and association
 
 This approach:
 
-Centralises credential management in server configuration
-Reduces application-level security handling
-Is preferred when credentials must not appear in application code
-Aligns well with operationally managed environments
+* Centralises credential management in server configuration
+* Reduces application-level security handling
+* Is preferred when credentials must not appear in application code
+* Aligns well with operationally managed environments
 
 server.xml configuration (Option B only)
 
