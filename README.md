@@ -26,12 +26,12 @@ This project demonstrates a Spring Boot–based Kafka consumer integrated with I
 
 ---
 
-Downloading
+## Downloading
 Clone the repository using your IDEs support, such as the Eclipse Git plugin
 or, download the sample as a ZIP and unzip onto the workstation
-Tip: Eclipse Git provides an 'Import existing Projects' check-box when cloning a repository.
+>*Tip: Eclipse Git provides an 'Import existing Projects' check-box when cloning a repository.*
 
-Check dependencies
+### Check dependencies
 If you are building this sample with Gradle or Maven you should verify that the correct CICS TS bill of materials (BOM) is specified for your target release of CICS. The BOM specifies a consistent set of artifacts, and adds information about their scope. In the example below the version specified is compatible with CICS TS V6.3, or newer. You can browse the published versions of the CICS BOM at Maven Central.
 
 Gradle (build.gradle):
@@ -67,11 +67,10 @@ Important
 
 The sample comes pre-configured for use with a JDK 17 and CICS TS V6.3 Libraries. When you initially import the project to your IDE, if your IDE is not configured for a JDK 17, or does not have CICS Explorer SDK installed, you might experience local project compile errors. To resolve issues you should configure the Project's build-path to add/remove your preferred combination of CICS TS, JDK, and Liberty's Enterprise Java libraries (Jakarta EE). Resolving errors might also depend on how you wish to build and deploy the sample. If you are building and deploying through CICS Explorer SDK and 'Export to zFS' you should edit the link-app's Project properties. Select 'Java Build Path', on the Libraries tab select 'Classpath', click 'Add Library', select 'CICS with Enterprise Java and Liberty' Library, and choose the appropriate CICS and Enterprise Java versions. If you are building and deploying with Gradle or Maven then you don't necessarily need to fix the local errors, but to do so, you can do as above, or you can run a tooling refresh on the cics-java-liberty-kafka project. For example, in Eclipse: right-click on "Project", select "Gradle -> Refresh Gradle Project", or right-click on "Project", select "Maven -> Update Project...".
 
-Tip
-
-In Eclipse, Gradle (buildship) is able to fully refresh and resolve the local classpath even if the project was previously updated by Maven. However, Maven (m2e) does not currently reciprocate that capability. If you previously refreshed the project with Gradle, you'll need to manually remove the 'Project Dependencies' entry on the Java build-path of your Project Properties to avoid duplication errors when performing a Maven Project Update.
+>Tip: *In Eclipse, Gradle (buildship) is able to fully refresh and resolve the local classpath even if the project was previously updated by Maven. However, Maven (m2e) does not currently reciprocate that capability. If you previously refreshed the project with Gradle, you'll need to manually remove the 'Project Dependencies' entry on the Java build-path of your Project Properties to avoid duplication errors when performing a Maven Project Update.*  
 
 Option 1: Building with Gradle
+
 For a complete build you should run the settings.gradle file in the top-level 'cics-java-liberty-kafka' directory which is designed to invoke the individual build.gradle files for each project.
 
 If successful, a WAR file is created inside the cics-java-liberty-kafka-app/build/libs and  and a CICS bundle ZIP file inside the cics-java-liberty-kafka-bundle/build/distribution directory.
@@ -93,6 +92,7 @@ gradle clean build
 The Maven wrapper included in this project uses Maven 3.9.x, which fully supports Java 17-21.
 
 Option 2: Building with Apache Maven
+
 For a complete build you should run the pom.xml file in the top-level 'cics-java-liberty-kafka' directory. A WAR file is created inside the cics-java-liberty-kafka-app/target directory and a CICS bundle ZIP file inside the cics-java-liberty-kafka-bundle/target directory.
 
 If building a CICS bundle ZIP the CICS JVM server name for the WAR bundle part should be modified in the cics.jvmserver property, defined in cics-java-liberty-link-kafka/pom.xml file under the defaultjvmserver configuration property, or alternatively can be set on the command line.
@@ -110,16 +110,18 @@ mvn clean verify
 The Gradle wrapper included in this project uses Gradle 8.x, which fully supports Java 17-21.
 
 Option 3: Building with Eclipse
+
 If you are using the Egit client to clone the repo, remember to tick the button to import all projects. Otherwise, you should manually Import the projects into CICS Explorer using File → Import → General → Existing projects into workspace, then follow the error resolution advice above.
 
 ---
 
-Deploying to a Liberty JVM server
+## Deploying to a CICS Liberty JVM server
 
-Ensure you have the following features defined in your Liberty server.xml:
-  <servlet-3.1> or <servlet-4.0> depending on the version of Java EE in use.
-  <cicsts:security-1.0> if CICS security is enabled.
-Note: servlet-4.0 will only work for CICS TS V5.5 or later
+- Ensure you have the following features defined in your Liberty `server.xml`:           
+    - `<servlet-3.1>` or `<servlet-4.0>` depending on the version of Java EE in use.  
+    - `<cicsts:security-1.0>` if CICS security is enabled.
+
+>**Note:** `servlet-4.0` will only work for CICS TS V5.5 or later
 
 <featureManager>
         <feature>appSecurity-5.0</feature>
@@ -137,6 +139,7 @@ Deployment option 2:
 
 Manually upload the WAR file to zFS and add an <application> element to the Liberty server.xml to define the web application with access to all authenticated users. For example the following application element can be used to install a WAR, and grant access to all authenticated users if security is enabled.
 
+``` XML
 <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
         <classloader apiTypeVisibility="spec, ibm-api, stable, third-party"/>
         <application-bnd>
@@ -145,6 +148,7 @@ Manually upload the WAR file to zFS and add an <application> element to the Libe
             </security-role>
         </application-bnd>
     </application>
+```    
 
 ---
 
