@@ -40,6 +40,7 @@ compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:6.3-2025090515552
 
 Maven (POM.xml):
 
+``` xml
 <dependencyManagement>
     <dependencies>
       <dependency>
@@ -51,6 +52,7 @@ Maven (POM.xml):
       </dependency>
     </dependencies>
   </dependencyManagement>
+  ```
 
 ---
 
@@ -72,31 +74,45 @@ The required build-tasks are typically `clean bootWar` for Gradle and `clean pac
 
 #### Gradle Wrapper (command line)
 
-Gradle Wrapper (Linux/Mac):
-./gradlew clean build
+Run the following in a local command prompt:
 
-Gradle Wrapper (Windows):
-gradle.bat clean build
+On Linux or Mac:
 
-Gradle (command-line):
-gradle clean build
+```shell
+./gradlew clean bootWar
+```
+On Windows:
+
+```shell
+gradlew.bat clean bootWar
+```
+
+This creates a WAR file inside the `build/libs` directory.
 
 **Minimum Maven Version**: 3.8.1+ (Java 17 support)
 The Maven wrapper included in this project uses Maven 3.9.x, which fully supports Java 17-21.
 
 #### Maven Wrapper (command line)
 
-Maven Wrapper (Linux/Mac):
-./mvnw clean verify
+Run the following in a local command prompt:
 
-Maven Wrapper (Windows):
-mvnw.cmd clean verify
+On Linux or Mac:
 
-Maven (command-line):
-mvn clean verify
+```shell
+./mvnw clean package
+```
+
+On Windows:
+
+```shell
+mvnw.cmd clean package
+```
+
+This creates a WAR file inside the `target` directory.
 
 **Minimum Gradle Version**: 7.3+ (Java 17 support)
 The Gradle wrapper included in this project uses Gradle 8.x, which fully supports Java 17-21.
+
 ---
 
 ## Deploying to a CICS Liberty JVM server
@@ -332,10 +348,8 @@ Kafka client configuration should reference the above authData entry when this o
 
 ---
 
-Find out more
-For more information about invoking Java EE applications in a Liberty JVM server from CICS programs, see Linking to Java applications in a Liberty JVM server by using the @CICSProgram annotation.
+## License
 
-License
 This project is licensed under Eclipse Public License - v 2.0.
 
 Usage terms
