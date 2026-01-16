@@ -2,10 +2,8 @@
 <server description="CICS Liberty sample configuration">
     <!-- Enable features -->
     <featureManager>
-        <feature>appSecurity-5.0</feature>
-        <feature>transportSecurity-1.0</feature>
+    	<feature>appSecurity-5.0</feature>
         <feature>cicsts:security-1.0</feature>
-		<feature>cicsts:core-1.0</feature>
 		<feature>concurrent-3.0</feature>
 		<feature>servlet-6.0</feature>
 		<feature>jdbc-4.3</feature>
