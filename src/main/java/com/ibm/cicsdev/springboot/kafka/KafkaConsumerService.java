@@ -62,15 +62,6 @@ public class KafkaConsumerService
         handleBatch("orders", batch);
     }
 
-
-    @KafkaListener(id = "eventsListener", topics = "events", groupId = "test-group", containerFactory = "batchFactory",
-        autoStartup = "false")
-    public void onEventsBatch(List<ConsumerRecord<String, String>> batch)
-    {
-        handleBatch("events", batch);
-    }
-
-
     @KafkaListener(id = "test-topicListener", topics = "test-topic", groupId = "test-group",
         containerFactory = "batchFactory", autoStartup = "false")
     public void onTestBatch(List<ConsumerRecord<String, String>> batch)
@@ -157,7 +148,7 @@ public class KafkaConsumerService
 
     // If you ever need it, here's a safe wrapper to obtain the caller subject.
     @SuppressWarnings("unused")
-    private Optional<Subject> safeGetCallerSubject2()
+    private Optional<Subject> safeGetCallerSubject()
     {
         try
         {

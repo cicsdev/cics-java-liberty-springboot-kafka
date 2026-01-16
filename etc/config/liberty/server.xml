@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<server description="CICS Liberty sample configuration">
+    <!-- Enable features -->
+    <featureManager>
+        <feature>appSecurity-5.0</feature>
+        <feature>transportSecurity-1.0</feature>
+        <feature>cicsts:security-1.0</feature>
+		<feature>cicsts:core-1.0</feature>
+		<feature>concurrent-3.0</feature>
+		<feature>servlet-6.0</feature>
+		<feature>jdbc-4.3</feature>
+	</featureManager>
+		    
+    <!-- Default HTTP End Point -->
+    <httpEndpoint host="*" httpPort="12372" httpsPort="12373" id="defaultHttpEndpoint">
+        <!-- Increase server security with the OWASP recommended HTTP headers.
+             These should be configured further to meet the security needs of
+             your web applications, especially the Content-Security-Policty
+             (CSP) header. -->
+        <headers>
+            <setIfMissing>Content-Security-Policy</setIfMissing>
+            <setIfMissing>Referrer-Policy: strict-origin-when-cross-origin</setIfMissing>
+            <setIfMissing>X-Content-Type-Options: nosniff</setIfMissing>
+            <setIfMissing>X-Frame-Options: DENY</setIfMissing>
+        </headers>
+    </httpEndpoint>
+    
+    <!-- Provide more secure cookie defaults -->
+    <httpSession cookieHttpOnly="true" cookieSecure="true"/>
+    
+    <!-- Provide more secure application defaults -->
+    <webAppSecurity httpOnlyCookies="true" ssoRequiresSSL="true"/>
+    
+    <!-- Add Strict Transport Security (HSTS) -->
+    <webContainer addStrictTransportSecurityHeader="max-age=31536000;includeSubDomains"/>
+    
+    <!-- Add a more secure session timeout (default is 120 mins) -->
+    <ltpa expiration="5m"/>
+    
+    <!-- The following configuration controls how often server.xml
+         is scanned for updates. The default is every 500ms which may
+         cause excessive I/O and CPU cost on z/OS.
+         The values shown below reduce the overhead while still
+         providing a relatively timely detection of new applications
+         that have been installed/removed via a CICS Bundle
+         (WAR bundlepart). If you use CICS bundles to install Web
+         Applications (WAR files) do not use the "disabled"
+         updateTrigger.
+    -->
+    <config monitorInterval="5s" updateTrigger="polled"/>
+    
+    <!-- The application start timeout specifies the maximum
+         amount of time the server waits for applications
+         to start before the server becomes available.
+         If there are lots of applications installed and startup
+         takes too long you may need to increase this value.
+    -->
+    <applicationManager startTimeout="60s"/>
+    
+    <!-- Further scanning is performed to detect application updates or
+         addition/removal of applications to the dropins directory. If
+         you are using CICS Bundles as the vehicle for Application
+         deployment you should disable the dropins directory as shown.
+         Further I/O and CPU reduction can be achieved by disabling
+         the application scan. To effect changes to your applications
+         while the server is still running, you should disable and
+         re-enable the CICS bundle that contains the Web application.
+         The pollingRate is only applicable when the updateTrigger is
+         set to the 'polled' value.
+         Consult the WebSphere Application Server Liberty Profile
+         documentation for further information on these parameters.
+    -->
+    <applicationMonitor dropins="dropins" dropinsEnabled="false" pollingRate="5s" updateTrigger="disabled"/>
+    <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
+        <classloader apiTypeVisibility="spec, ibm-api, stable, third-party"/>
+        <application-bnd>
+            <security-role name="cics-user">
+                <special-subject type="ALL_AUTHENTICATED_USERS"/>
+            </security-role>
+        </application-bnd>
+    </application>
+    
+    <!--  Enable Java Util Logging in Liberty trace.log for this App 
+    <logging traceSpecification="com.example.kafka=all"/>-->
+    <!-- By default, the cdi-1.2 feature scans all application archives.
+         The cdi-1.2 feature can increase startup time substantially
+         and have the most effect on larger applications. Implicit
+         archive scanning for annotations can be disabled by setting
+         enableImplicitBeanArchives value to false. This setting skips
+         the scanning of archives unless they contain a beans.xml.
+         Even if not explicitly coded, the cdi-1.2 feature might be
+         enabled through other features, such as the javaee-7.0
+         convenience feature.
+    -->
+    <!-- Obtain AES key from RACF key ring at runtime 
+    <zosPasswordEncryptionKey keyring="safkeyring:///AYUSHI.KUMARI" label="Liberty" type="JCERACFKS"/>
+    
+     (Optional) Use RACF key ring as SSL keystore 
+    <keyStore fileBased="false" id="defaultKeyStore" location="safkeyring:///AYUSHI.KUMARI" password="password" type="JCERACFKS"/>
+    
+    Credentials alias (AES-protected) 
+    <authData id="ayushiRacf" password="{aes}ARDI6N73meF9Zr9HvywCMrnbOJdkpWqkAGF4A1k4Vvd062dxoK79MKhmOg3RPz7NovzFLmHBrbGtjspOvIxhDT9ONngqKxpw2l6NyTgOT1ZfaVAPmaplpHbQda6tuDvwN6BNgKTzP5YXNIoHK830EsN9" user="IN00501"/>
+    -->
+    <cdi enableImplicitBeanArchives="false"/>
+    <include id="cics_auto" location="${server.config.dir}/installedApps.xml" onConflict="IGNORE"/>
+    <keyStore fileBased="false" id="defaultKeyStore" location="safkeyring://SYSTASK/MVS2DTLS" password="password" readOnly="true" type="JCERACFKS"/>
+    <ssl clientAuthenticationSupported="true" id="defaultSSLConfig" keyStoreRef="defaultKeyStore" sslProtocol="TLSv1.3,TLSv1.2"/>
+    <safRegistry enableFailover="false" id="saf"/>
+    <executor coreThreads="8" id="allowCICSconfigure" maxThreads="50"/>
+</server>
