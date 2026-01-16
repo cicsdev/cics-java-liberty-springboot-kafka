@@ -3,6 +3,7 @@
 
 This project demonstrates a Spring Boot–based Kafka consumer integrated with IBM CICS and deployed as a WAR to a CICS Liberty JVM server on z/OS. The application processes Kafka messages asynchronously under the caller’s security context and avoids clear-text credentials by storing them as AES-encrypted values in Liberty server.xml, with the AES key held in a RACF key ring. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.
 
+- [etc/config/liberty/server.xml](./etc/config/liberty/server.xml) - A template `server.xml` demonstrating the minimum configuration required to run the sample.
 ---
 
 ## Requirements
@@ -140,8 +141,7 @@ Deployment option 2:
 Manually upload the WAR file to zFS and add an <application> element to the Liberty server.xml to define the web application with access to all authenticated users. For example the following application element can be used to install a WAR, and grant access to all authenticated users if security is enabled.
 
 ``` XML
-<application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
-        <classloader apiTypeVisibility="spec, ibm-api, stable, third-party"/>
+    <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
         <application-bnd>
             <security-role name="cics-user">
                 <special-subject type="ALL_AUTHENTICATED_USERS"/>
@@ -289,21 +289,19 @@ Option B only: authData-based Kafka credentials
 
 > Run these TSO commands with appropriate IDs and DNs for your environment.
 > YOUR.KEYRING is the generic value for keyring.
-> Not sure about the syntax of these commands I iterated through some and had failures
-> and can't remember the winning combo
 
 ```tso
 /* Create key ring (owned by Liberty STC user, e.g., <user_id>) */
-RACDCERT ADDRING(YOUR.KEYRING) ID(<user_id>)                   
+RACDCERT ADDRING(YOUR.KEYRING) ID(<user_id>)           
 
 /* (Optional) Create a CERTAUTH root CA */
 RACDCERT GENCERT CERTAUTH +
-  SUBJECTSDN( CN('MyLibertyCA') C('UK') O('YourOrg') OU('Liberty') ) +
+  SUBJECTSDN(CN('MyLibertyCA') C('UK') O('YourOrg') OU('Liberty')) +
   WITHLABEL('LIBERTY.CA') NOTAFTER(DATE(2030/12/31))
 
 /* Create a personal certificate labeled 'Liberty' for <user_id> */
 RACDCERT GENCERT ID(<user_id>) +
-  SUBJECTSDN( CN('liberty.example.com') C('UK') O('YourOrg') OU('Liberty') ) +
+  SUBJECTSDN(CN('liberty.example.com') C('UK') O('YourOrg') OU('Liberty')) +
   WITHLABEL('Liberty') +
   SIGNWITH(CERTAUTH LABEL('LIBERTY.CA')) +
   RSA SIZE(2048) NOTAFTER(DATE(2028/12/31))

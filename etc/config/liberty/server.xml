@@ -7,6 +7,8 @@
 		<feature>concurrent-3.0</feature>
 		<feature>servlet-6.0</feature>
 		<feature>jdbc-4.3</feature>
+        <!-- <feature>passwordUtilities-1.0</feature>
+        <feature>zosPasswordEncryptionKey-1.0</feature> -->
 	</featureManager>
 		    
     <!-- Default HTTP End Point -->
@@ -28,12 +30,6 @@
     
     <!-- Provide more secure application defaults -->
     <webAppSecurity httpOnlyCookies="true" ssoRequiresSSL="true"/>
-    
-    <!-- Add Strict Transport Security (HSTS) -->
-    <webContainer addStrictTransportSecurityHeader="max-age=31536000;includeSubDomains"/>
-    
-    <!-- Add a more secure session timeout (default is 120 mins) -->
-    <ltpa expiration="5m"/>
     
     <!-- The following configuration controls how often server.xml
          is scanned for updates. The default is every 500ms which may
@@ -70,7 +66,6 @@
     -->
     <applicationMonitor dropins="dropins" dropinsEnabled="false" pollingRate="5s" updateTrigger="disabled"/>
     <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
-        <classloader apiTypeVisibility="spec, ibm-api, stable, third-party"/>
         <application-bnd>
             <security-role name="cics-user">
                 <special-subject type="ALL_AUTHENTICATED_USERS"/>
@@ -78,31 +73,18 @@
         </application-bnd>
     </application>
     
-    <!--  Enable Java Util Logging in Liberty trace.log for this App 
-    <logging traceSpecification="com.example.kafka=all"/>-->
-    <!-- By default, the cdi-1.2 feature scans all application archives.
-         The cdi-1.2 feature can increase startup time substantially
-         and have the most effect on larger applications. Implicit
-         archive scanning for annotations can be disabled by setting
-         enableImplicitBeanArchives value to false. This setting skips
-         the scanning of archives unless they contain a beans.xml.
-         Even if not explicitly coded, the cdi-1.2 feature might be
-         enabled through other features, such as the javaee-7.0
-         convenience feature.
-    -->
-    <!-- Obtain AES key from RACF key ring at runtime 
-    <zosPasswordEncryptionKey keyring="safkeyring:///AYUSHI.KUMARI" label="Liberty" type="JCERACFKS"/>
+    <!-- Obtain AES key from RACF key ring at runtime --> 
+    <!--  <zosPasswordEncryptionKey keyring="safkeyring:///YOUR.KEYRING" label="Liberty" type="JCERACFKS"/>  -->
+        
+    <!-- Option B: Credentials alias (AES-protected) --> 
+    <!-- <authData id="cicsSAF" user="<user_id>" password="{aes}ARI673meZr9vy...." /> -->    
     
-     (Optional) Use RACF key ring as SSL keystore 
-    <keyStore fileBased="false" id="defaultKeyStore" location="safkeyring:///AYUSHI.KUMARI" password="password" type="JCERACFKS"/>
+    <!--  (Optional) Use RACF key ring as SSL keystore  -->
+    <!-- <keyStore fileBased="false" id="defaultKeyStore" location="safkeyring:///YOUR.KEYRING" password="password" readOnly="true" type="JCERACFKS"/> -->
     
-    Credentials alias (AES-protected) 
-    <authData id="ayushiRacf" password="{aes}ARDI6N73meF9Zr9HvywCMrnbOJdkpWqkAGF4A1k4Vvd062dxoK79MKhmOg3RPz7NovzFLmHBrbGtjspOvIxhDT9ONngqKxpw2l6NyTgOT1ZfaVAPmaplpHbQda6tuDvwN6BNgKTzP5YXNIoHK830EsN9" user="IN00501"/>
-    -->
+    <ssl clientAuthenticationSupported="true" id="defaultSSLConfig" keyStoreRef="defaultKeyStore" sslProtocol="TLSv1.3,TLSv1.2"/>   
     <cdi enableImplicitBeanArchives="false"/>
     <include id="cics_auto" location="${server.config.dir}/installedApps.xml" onConflict="IGNORE"/>
-    <keyStore fileBased="false" id="defaultKeyStore" location="safkeyring://SYSTASK/MVS2DTLS" password="password" readOnly="true" type="JCERACFKS"/>
-    <ssl clientAuthenticationSupported="true" id="defaultSSLConfig" keyStoreRef="defaultKeyStore" sslProtocol="TLSv1.3,TLSv1.2"/>
     <safRegistry enableFailover="false" id="saf"/>
     <executor coreThreads="8" id="allowCICSconfigure" maxThreads="50"/>
 </server>
