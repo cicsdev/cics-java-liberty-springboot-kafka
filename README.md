@@ -119,7 +119,7 @@ The Gradle wrapper included in this project uses Gradle 8.x, which fully support
 ## Deploying to a CICS Liberty JVM server
 
 - Ensure you have the following features defined in your Liberty `server.xml`:           
-    - `<servlet-3.1>` or `<servlet-4.0>` depending on the version of Java EE in use.  
+    - `<servlet-6.0>` depending on the version of Java EE in use.  
     - `<cicsts:security-1.0>` if CICS security is enabled.
 
 >**Note:** `servlet-4.0` will only work for CICS TS V5.5 or later
