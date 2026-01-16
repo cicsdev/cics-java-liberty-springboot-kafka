@@ -1,7 +1,7 @@
 # cics-java-liberty-springboot-kafka
 [![Build](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/java.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/java.yaml)
 
-This project demonstrates a Spring Boot–based Kafka consumer integrated with IBM CICS and deployed as a WAR to a CICS Liberty JVM server on z/OS. The application processes Kafka messages asynchronously under the caller’s security context and avoids clear-text credentials by storing them as AES-encrypted values in Liberty server.xml, with the AES key held in a RACF key ring. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.
+This project demonstrates a Spring Boot–based Kafka consumer integrated with IBM CICS and deployed as a WAR to a CICS Liberty JVM server on z/OS. The application processes Kafka messages asynchronously under the caller’s security context and avoids clear-text credentials by storing them as AES-encrypted values in Liberty server.xml, with the AES key held in a RACF key ring. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.It also demonstrates configurable workload classification onto CICS transactions (as well as security).
 
 - [etc/config/liberty/server.xml](./etc/config/liberty/server.xml) - A template `server.xml` demonstrating the minimum configuration required to run the sample.
 ---
@@ -121,8 +121,6 @@ The Gradle wrapper included in this project uses Gradle 8.x, which fully support
 - Ensure you have the following features defined in your Liberty `server.xml`:           
     - `<servlet-6.0>` depending on the version of Java EE in use.  
     - `<cicsts:security-1.0>` if CICS security is enabled.
-
->**Note:** `servlet-4.0` will only work for CICS TS V5.5 or later
 
 <featureManager>
         <feature>appSecurity-5.0</feature>
