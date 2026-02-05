@@ -3,7 +3,14 @@
 
 This project demonstrates a Spring Boot–based Kafka consumer integrated with IBM CICS and deployed as a WAR to a CICS Liberty JVM server on z/OS. The application processes Kafka messages asynchronously under the caller’s security context and avoids clear-text credentials by storing them as AES-encrypted values in Liberty server.xml, with the AES key held in a RACF key ring. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.It also demonstrates configurable workload classification onto CICS transactions (as well as security).
 
+The sample follows CICSDev best practices and is intended both as a runnable example and as an educational reference.
+
+- [com.ibm.cicsdev.springboot.kafka](/) - Top-level project.
+- [com.ibm.cicsdev.springboot.kafka.app](./com.ibm.cicsdev.springboot.kafka.app) - Main application project.
+- [com.ibm.cicsdev.springboot.kafka.bundle](./com.ibm.cicsdev.springboot.kafka.bundle) - CICS bundle plug-in based project, contains application and KAFK transaction bundle-parts. Use with Gradle and Maven builds.
+- [etc/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle](./etc/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle) - CICS Explorer based CICS bundle project, contains application and KAFK transaction bundle-parts. Use with CICS Explorer 'Export to zFS' deployment capability.
 - [etc/config/liberty/server.xml](./etc/config/liberty/server.xml) - A template `server.xml` demonstrating the minimum configuration required to run the sample.
+
 ---
 
 ## Requirements
@@ -59,11 +66,15 @@ Maven (POM.xml):
 
 ## Building the sample
 
-You can build the sample using an IDE of your choice, or you can build it from the command line. For both approaches, using the supplied Gradle or Maven wrapper is the recommended way to get a consistent version of build tooling. 
+You can build the sample in a variety of ways:
 
-On the command line, you simply swap the Gradle or Maven command for the wrapper equivalent, `gradlew` or `mvnw` respectively.
-  
-For an IDE, taking Eclipse as an example, the plug-ins for Gradle *buildship* and Maven *m2e* will integrate with the "Run As..." capability, allowing you to specify whether you want to build the project with a Wrapper, or a specific version of your chosen build tool.
+- Using the implicit compile/build of the Eclipse based CICS Explorer SDK
+- Using the built-in Gradle or Maven support of your IDE (For example: buildship or m2e in Eclipse which integrate with the "Run As..." menu.)
+- Using the supplied Gradle or Maven Wrapper scripts (no requirement for an IDE or Gradle/Maven install) or you can build it from the command line if you have Gradle or Maven installed on your workstation
+
+Important
+
+The sample comes pre-configured for use with a JDK 17 and CICS TS V6.3 Libraries. When you initially import the project to your IDE, if your IDE is not configured for a JDK 17, or does not have CICS Explorer SDK installed, you might experience local project compile errors. To resolve issues you should configure the Project's build-path to add/remove your preferred combination of CICS TS, JDK, and Liberty's Enterprise Java libraries (Jakarta EE). Resolving errors might also depend on how you wish to build and deploy the sample. If you are building and deploying through CICS Explorer SDK and 'Export to zFS' you should edit the link-app's Project properties. Select 'Java Build Path', on the Libraries tab select 'Classpath', click 'Add Library', select 'CICS with Enterprise Java and Liberty' Library, and choose the appropriate CICS and Enterprise Java versions. 
 
 The required build-tasks are typically `clean bootWar` for Gradle and `clean package` for Maven. Once run, Gradle will generate a WAR file in the `build/libs` directory, while Maven will generate it in the `target` directory.
 
@@ -73,9 +84,17 @@ The required build-tasks are typically `clean bootWar` for Gradle and `clean pac
 
 >Tip: *In Eclipse, Gradle (buildship) is able to fully refresh and resolve the local classpath even if the project was previously updated by Maven. However, Maven (m2e) does not currently reciprocate that capability. If you previously refreshed the project with Gradle, you'll need to manually remove the 'Project Dependencies' entry on the Java build-path of your Project Properties to avoid duplication errors when performing a Maven Project Update.*  
 
-#### Gradle Wrapper (command line)
+#### Option 1: Building with Gradle
 
-Run the following in a local command prompt:
+For a complete build you should run the settings.gradle file in the top-level 'com.ibm.cicsdev.springboot.kafka' directory which is designed to invoke the individual build.gradle files for each project.
+
+If successful, a WAR file is created inside the com.ibm.cicsdev.springboot.kafka.app/build/libs and  and a CICS bundle ZIP file inside the com.ibm.cicsdev.springboot.kafka.bundle/build/distribution directory.
+
+[!NOTE] In Eclipse, the output 'build' directory is often hidden by default. From the Package Explorer panel, select the three dot menu, choose filters and un-check the Gradle build folder to view its contents.
+
+The JVM server the CICS bundle is targeted at is controlled through the cics.jvmserver property, defined in the com.ibm.cicsdev.springboot.kafka.bundle/build.gradle file, or alternatively can be set on the command line:
+
+Gradle Wrapper (Linux/Mac):
 
 On Linux or Mac:
 
@@ -88,16 +107,15 @@ On Windows:
 gradlew.bat clean bootWar
 ```
 
-This creates a WAR file inside the `build/libs` directory.
-
 **Minimum Maven Version**: 3.8.1+ (Java 17 support)
 The Maven wrapper included in this project uses Maven 3.9.x, which fully supports Java 17-21.
 
-#### Maven Wrapper (command line)
+#### Option 2: Building with Apache Maven
+For a complete build you should run the pom.xml file in the top-level 'com.ibm.cicsdev.springboot.kafka' directory. A WAR file is created inside the com.ibm.cicsdev.springboot.kafka.app/target directory and a CICS bundle ZIP file inside the com.ibm.cicsdev.springboot.kafka.bundle/target directory.
 
-Run the following in a local command prompt:
+If building a CICS bundle ZIP the CICS JVM server name for the WAR bundle part should be modified in the cics.jvmserver property, defined in com.ibm.cicsdev.springboot.kafka/pom.xml file under the defaultjvmserver configuration property, or alternatively can be set on the command line.
 
-On Linux or Mac:
+Maven Wrapper (Linux/Mac):
 
 ```shell
 ./mvnw clean package
@@ -113,6 +131,9 @@ This creates a WAR file inside the `target` directory.
 
 **Minimum Gradle Version**: 7.3+ (Java 17 support)
 The Gradle wrapper included in this project uses Gradle 8.x, which fully supports Java 17-21.
+
+#### Option 3: Building with Eclipse
+If you are using the Egit client to clone the repo, remember to tick the button to import all projects. Otherwise, you should manually Import the projects into CICS Explorer using File → Import → General → Existing projects into workspace, then follow the error resolution advice above.
 
 ---
 
@@ -132,11 +153,17 @@ The Gradle wrapper included in this project uses Gradle 8.x, which fully support
 </featureManager>
 ```
 
-Deployment option 1:
+## Deploying CICS Bundles from Gradle or Maven
+
+Manually upload the ZIP file from the com.ibm.cicsdev.springboot.kafka.bundle/target or com.ibm.cicsdev.springboot.kafka.bundle/build/distributions directory to zFS.
+Unzip this ZIP file on zFS (e.g. ${JAVA_HOME}/bin/jar xf /path/to/bundle.zip).
+Create a CICS BUNDLE resource definition, setting the bundle directory attribute to the zFS location you just extracted to, and install it into the CICS region.
+
+## Deploying CICS Bundles with CICS Explorer
 
 Copy and paste the built WAR from your target or build/libs directory into a Eclipse CICS bundle project and create a new WAR bundlepart that references the WAR file. Then deploy the CICS bundle project from CICS Explorer using the Export Bundle Project to z/OS UNIX File System wizard.
 
-Deployment option 2:
+## Deploying directly with Liberty's application configuration
 
 Manually upload the WAR file to zFS and add an <application> element to the Liberty server.xml to define the web application with access to all authenticated users. For example the following application element can be used to install a WAR, and grant access to all authenticated users if security is enabled.
 
