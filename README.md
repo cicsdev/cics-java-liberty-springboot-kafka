@@ -8,7 +8,7 @@ The sample follows CICSDev best practices and is intended both as a runnable exa
 - [com.ibm.cicsdev.springboot.kafka](/) - Top-level project.
 - [com.ibm.cicsdev.springboot.kafka.app](./com.ibm.cicsdev.springboot.kafka.app) - Main application project.
 - [com.ibm.cicsdev.springboot.kafka.bundle](./com.ibm.cicsdev.springboot.kafka.bundle) - CICS bundle plug-in based project, contains application and KAFK transaction bundle-parts. Use with Gradle and Maven builds.
-- [etc/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle](./etc/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle) - CICS Explorer based CICS bundle project, contains application and KAFK transaction bundle-parts. Use with CICS Explorer 'Export to zFS' deployment capability.
+- [etc/config/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle](./etc/config/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle) - CICS Explorer based CICS bundle project, contains application and KAFK transaction bundle-parts. Use with CICS Explorer 'Export to zFS' deployment capability.
 - [etc/config/liberty/server.xml](./etc/config/liberty/server.xml) - A template `server.xml` demonstrating the minimum configuration required to run the sample.
 
 ---
