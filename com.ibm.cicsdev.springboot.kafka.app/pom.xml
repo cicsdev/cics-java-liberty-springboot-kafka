@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ================================================================ -->
+    <!-- Parent Project                                                   -->
+    <!-- ================================================================ -->
+    <parent>
+        <groupId>com.ibm.cicsdev.springboot</groupId>
+  		<artifactId>cics-java-liberty-springboot-kafka</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <!-- ================================================================ -->
+    <!-- Project Coordinates                                              -->
+    <!-- ================================================================ -->
+    <artifactId>com.ibm.cicsdev.springboot.kafka.app</artifactId>
+    <packaging>war</packaging>
+    <name>CICS Kafka Springboot - Application</name>
+
+    <!-- ================================================================ -->
+	<!-- Dependencies                                                     -->
+	<!-- ================================================================ -->  
+	<dependencies>
+		<!-- Spring Boot web support -->   
+	    <dependency>
+	     <groupId>org.springframework.boot</groupId>
+	      <artifactId>spring-boot-starter-web</artifactId>
+	    </dependency>
+	
+		<!-- Compile against, but don't include TomCat in the runtime build --> 
+	    <dependency>
+	      <groupId>org.springframework.boot</groupId>
+	      <artifactId>spring-boot-starter-tomcat</artifactId>
+	      <scope>provided</scope>
+	    </dependency>
+	    
+	    <!-- Jakarta EE 10 APIs (compile only, Liberty provides runtime) -->
+	    <dependency>
+			<groupId>jakarta.platform</groupId>
+	        <artifactId>jakarta.jakartaee-api</artifactId>
+	        <version>${jakartaee.version}</version>
+	        <scope>provided</scope>
+	    </dependency>
+	
+		<!-- Spring Kafka -->
+	    <dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+	    </dependency>
+		
+		<!-- Liberty Security APIs (WSSubject, JAAS, AuthData) -->
+		<dependency>
+			<groupId>net.wasdev.maven.tools.targets</groupId>
+			<artifactId>liberty-apis</artifactId>
+	        <version>${liberty.apis.version}</version>
+	        <type>pom</type>
+	        <scope>provided</scope>
+	    </dependency>
+	
+		<!-- JCICS APIs (compile only, provided by CICS runtime) -->
+		<dependency>
+			<groupId>com.ibm.cics</groupId>
+			<artifactId>com.ibm.cics.server</artifactId>
+	        <scope>provided</scope>
+	    </dependency>
+	
+	</dependencies>
+
+    <!-- ================================================================ -->
+    <!-- Build Configuration                                              -->
+    <!-- ================================================================ -->
+    <build>
+	<finalName>cics-java-liberty-springboot-kafka</finalName>
+    <plugins>
+       <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+       </plugin>
+    </plugins>
+  </build>
+
+</project>
