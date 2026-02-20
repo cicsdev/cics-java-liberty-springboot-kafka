@@ -2,7 +2,7 @@
 // Plugins
 // ============================================================================
 plugins {
-    id 'com.ibm.cics.bundle' version '1.0.7'
+    id 'com.ibm.cics.bundle' version '1.0.8'
 }
 
 // ============================================================================
@@ -26,5 +26,14 @@ cicsBundle {
     build {
         defaultJVMServer = project.findProperty('cics.jvmserver') ?: cicsJvmServer
     }
+    
+    libertyWarUpload {
+         serverUrl = 'http://<host>:<port>/com.ibm.cics.wlp.warupload/uploadApp'
+         appId = 'cics-java-liberty-springboot-kafka'
+         contextRoot = '/uploadApp'
+         roleName = 'cics-user'
+         userName = 'XXX'
+         password = 'XXXX'
+     }
 }
 
