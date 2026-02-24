@@ -170,7 +170,7 @@ Manually upload the WAR file to zFS and add an <application> element to the Libe
 ``` XML
     <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
         <application-bnd>
-            <security-role name="cics-user">
+            <security-role name="User">
                 <special-subject type="ALL_AUTHENTICATED_USERS"/>
             </security-role>
         </application-bnd>

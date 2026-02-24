@@ -23,8 +23,8 @@ import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
 
 
-@DeclareRoles({ "cics-user" })
-@RolesAllowed("cics-user")
+@DeclareRoles({ "User" })
+@RolesAllowed("User")
 @RestController
 @RequestMapping("/control")
 public class KafkaController

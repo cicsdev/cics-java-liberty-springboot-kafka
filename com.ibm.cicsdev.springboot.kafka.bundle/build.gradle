@@ -31,9 +31,9 @@ cicsBundle {
          serverUrl = 'http://<host>:<port>/com.ibm.cics.wlp.warupload/uploadApp'
          appId = 'cics-java-liberty-springboot-kafka'
          contextRoot = '/uploadApp'
-         roleName = 'cics-user'
-         userName = 'XXX'
-         password = 'XXXX'
+         roleName = 'User'
+         userName = cicsUser
+         password = cicsPass
      }
 }
 
