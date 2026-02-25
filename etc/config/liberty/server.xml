@@ -52,7 +52,7 @@
     <applicationMonitor dropins="dropins" dropinsEnabled="false" pollingRate="5s" updateTrigger="disabled"/>
     <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
         <application-bnd>
-            <security-role name="User">
+            <security-role name="cics-user">
                 <special-subject type="ALL_AUTHENTICATED_USERS"/>
             </security-role>
         </application-bnd>
