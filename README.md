@@ -6,12 +6,12 @@
 
 This sample demonstrates how to integrate Apache Kafka with IBM CICS using Spring Boot, deployed as a WAR file to a CICS Liberty JVM server on z/OS. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.
 
-The sample follows CICSDev best practices and is intended both as a runnable example and as an educational reference for developers learning to build enterprise-grade Kafka consumers.
+The sample is intended both as a runnable example and as an educational reference for developers learning to build enterprise-grade Kafka consumers.
 
 **What This Sample Does:**
 - Consumes messages from multiple Kafka topics asynchronously
 - Processes each message within a CICS transaction context
-- Demonstrates proper security identity propagation in Liberty
+- Demonstrates security identity propagation in Liberty
 - Shows how to map different topics to different CICS transaction IDs
 - Provides two alternative security approaches for credential management
 
@@ -39,7 +39,7 @@ The sample follows CICSDev best practices and is intended both as a runnable exa
 
 ### High-Level Design Intent
 
-This sample addresses a fundamental challenge: **how to safely consume Kafka messages within CICS transactions while maintaining proper security context**.
+This sample addresses a fundamental challenge: **how to safely consume Kafka messages within CICS transactions while maintaining security context**.
 
 This sample has the following components:
 
@@ -174,7 +174,7 @@ public void onTestBatch(List<ConsumerRecord<String, String>> batch) { ... }
 The `application.properties` file maps topics to transaction IDs:
 ```properties
 cics.transaction.map.test-topic=KAFK
-cics.transaction.map.orders=CJSU
+cics.transaction.map.orders=KAF1
 ```
 
 If no mapping exists, the default transaction ID `CJSU` is used.
@@ -400,8 +400,8 @@ cics.transaction.map.<your-topic>=<YOUR_TRANID>
 ```properties
 spring.kafka.bootstrap-servers=9.109.246.51:9092
 spring.kafka.consumer.group-id=my-consumer-group
-cics.transaction.map.orders=ORDER
 cics.transaction.map.test-topic=KAFK
+cics.transaction.map.orders=KAF1
 ```
 
 ---
@@ -448,18 +448,20 @@ cics.transaction.map.test-topic=KAFK
 ---
 
 ### 3. Build Configuration (Optional)
-**Files:** 
-- `com.ibm.cicsdev.springboot.kafka.bundle/build.gradle`
-- `com.ibm.cicsdev.springboot.kafka.bundle/pom.xml`
+**Files:**
+- `cics-java-liberty-springboot-kafka-cicsbundle/build.gradle`
+- `cics-java-liberty-springboot-kafka-cicsbundle/pom.xml`
+
+**Note:** These settings are only required if using the CICS bundle plugins for deployment (Method 1).
 
 **What to change:**
 ```gradle
-// Gradle: Set your target JVM server name
+// Gradle: Set your target JVM server name (for cics-bundle-gradle-plugin)
 cics.jvmserver = '<YOUR_JVMSERVER_NAME>'
 ```
 
 ```xml
-<!-- Maven: Set your target JVM server name -->
+<!-- Maven: Set your target JVM server name (for cics-bundle-maven-plugin) -->
 <defaultjvmserver><YOUR_JVMSERVER_NAME></defaultjvmserver>
 ```
 
@@ -1147,8 +1149,8 @@ public class KafkaBatchConfig {
 
 **Configuration in application.properties:**
 ```properties
-cics.transaction.map.orders=ORDR
 cics.transaction.map.test-topic=KAFK
+cics.transaction.map.orders=KAF1
 ```
 
 **Teaching Point:** Use Spring's `@ConfigurationProperties` to externalize configuration. This makes the application more flexible and maintainable.
