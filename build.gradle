@@ -1,5 +1,0 @@
-task uploadWar {
-    group = 'upload'
-    description = 'Upload WAR to Liberty server'
-    dependsOn ':com.ibm.cicsdev.springboot.kafka.bundle:uploadWarToLiberty'
-}
