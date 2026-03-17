@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<manifest xmlns="http://www.ibm.com/xmlns/prod/cics/bundle" bundleMajorVer="1" bundleMicroVer="0" bundleMinorVer="0" bundleRelease="0" bundleVersion="1" id="com.ibm.cicsdev.springboot.kafka.bundle">
-  <meta_directives>
-    <timestamp>2026-02-05T04:00:09.004705Z</timestamp>
-  </meta_directives>
-  <define name="KAFK" path="KAFK.transaction" type="http://www.ibm.com/xmlns/prod/cics/bundle/TRANSACTION"/>
-  <define name="com.ibm.cicsdev.springboot.kafka.app" path="com.ibm.cicsdev.springboot.kafka.app.warbundle" type="http://www.ibm.com/xmlns/prod/cics/bundle/WARBUNDLE"/>
-</manifest>
