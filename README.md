@@ -382,7 +382,7 @@ CICS transaction runs as authData user
 Before building and deploying this sample, you **must** customize the following files with your environment-specific values:
 
 ### 1. Kafka Connection Configuration
-**File:** `com.ibm.cicsdev.springboot.kafka.app/src/main/resources/application.properties`
+**File:** `cics-java-liberty-springboot-kafka-app/src/main/resources/application.properties`
 
 **What to change:**
 ```properties
@@ -471,7 +471,7 @@ cics.jvmserver = '<YOUR_JVMSERVER_NAME>'
 ---
 
 ### 4. Java Code (Only for Route B)
-**File:** `com.ibm.cicsdev.springboot.kafka.app/src/main/java/com/example/kafkaspringboot/KafkaController.java`
+**File:** `cics-java-liberty-springboot-kafka-app/src/main/java/com/ibm/cicsdev/springboot/kafka/KafkaController.java`
 
 **What to change:**
 Uncomment the LoginManager autowiring:
@@ -495,7 +495,7 @@ With:
 Subject subject = loginManager.getSubject();
 ```
 
-**File:** `com.ibm.cicsdev.springboot.kafka.app/src/main/java/com/example/kafkaspringboot/LoginManager.java`
+**File:** `cics-java-liberty-springboot-kafka-app/src/main/java/com/ibm/cicsdev/springboot/kafka/LoginManager.java`
 
 **What to change:**
 ```java
@@ -555,11 +555,11 @@ cics-java-liberty-springboot-kafka/
 ├── gradlew / gradlew.bat                        # Gradle wrapper scripts
 ├── mvnw / mvnw.cmd                              # Maven wrapper scripts
 │
-├── com.ibm.cicsdev.springboot.kafka.app/        # Main application
+├── cics-java-liberty-springboot-kafka-app/      # Main application
 │   ├── build.gradle                             # App-level Gradle build
 │   ├── pom.xml                                  # App-level Maven POM
 │   └── src/main/
-│       ├── java/com/example/kafkaspringboot/
+│       ├── java/com/ibm/cicsdev/springboot/kafka
 │       │   ├── KafkaApplication.java            # Spring Boot entry point
 │       │   ├── KafkaController.java             # REST API for start/stop
 │       │   ├── KafkaConsumerService.java        # Kafka listeners per topic
@@ -572,7 +572,7 @@ cics-java-liberty-springboot-kafka/
 │       └── webapp/WEB-INF/
 │           └── web.xml                          # Web app descriptor
 │
-├── com.ibm.cicsdev.springboot.kafka.bundle/     # CICS bundle (Gradle/Maven)
+├── cics-java-liberty-springboot-kafka-cicsbundle/  # CICS bundle (Gradle/Maven)
 │   ├── build.gradle                             # Bundle Gradle build
 │   ├── pom.xml                                  # Bundle Maven POM
 │   └── src/main/bundleParts/
@@ -582,7 +582,7 @@ cics-java-liberty-springboot-kafka/
 │   ├── liberty/
 │   │   └── server.xml                           # Liberty server template
 │   └── eclipse_projects/
-│       └── com.ibm.cicsdev.springboot.examples.kafka.bundle/
+│       └── cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
 │           └── ...                              # CICS Explorer bundle project
 │
 └── gradle/ & .mvn/                              # Wrapper support files
@@ -639,8 +639,8 @@ gradlew.bat clean build
 ```
 
 **Output:**
-- WAR file: `com.ibm.cicsdev.springboot.kafka.app/build/libs/cics-java-liberty-springboot-kafka.war`
-- CICS bundle ZIP: `com.ibm.cicsdev.springboot.kafka.bundle/build/distributions/com.ibm.cicsdev.springboot.kafka.bundle-<version>.zip`
+- WAR file: `cics-java-liberty-springboot-kafka-app/build/libs/cics-java-liberty-springboot-kafka-app.war`
+- CICS bundle ZIP: `cics-java-liberty-springboot-kafka-cicsbundle/build/distributions/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0.zip`
 
 **Note:** In Eclipse, the `build` directory may be hidden. To view it: Package Explorer → ⋮ menu → Filters → Uncheck "Gradle build folder".
 
@@ -661,8 +661,8 @@ mvnw.cmd clean package
 ```
 
 **Output:**
-- WAR file: `com.ibm.cicsdev.springboot.kafka.app/target/cics-java-liberty-springboot-kafka.war`
-- CICS bundle ZIP: `com.ibm.cicsdev.springboot.kafka.bundle/target/com.ibm.cicsdev.springboot.kafka.bundle-<version>.zip`
+- WAR file: `cics-java-liberty-springboot-kafka-app/target/cics-java-liberty-springboot-kafka-app.war`
+- CICS bundle ZIP: `cics-java-liberty-springboot-kafka-cicsbundle/target/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0.zip`
 
 ---
 
@@ -679,7 +679,7 @@ mvnw.cmd clean package
    - Select appropriate CICS and Java EE versions
 
 3. **Build:**
-   - Right-click `com.ibm.cicsdev.springboot.kafka` → Run As → Gradle Build (or Maven Build)
+   - Right-click `cics-java-liberty-springboot-kafka` → Run As → Gradle Build (or Maven Build)
    - Goals: `clean build` (Gradle) or `clean package` (Maven)
 
 **Tip:** If switching between Gradle and Maven in Eclipse, you may need to manually remove duplicate "Project Dependencies" entries from the build path.
@@ -693,21 +693,21 @@ mvnw.cmd clean package
 1. **Upload the bundle ZIP to zFS:**
    ```bash
    # From your workstation
-   scp com.ibm.cicsdev.springboot.kafka.bundle/build/distributions/*.zip user@zos:/path/to/bundles/
+   scp cics-java-liberty-springboot-kafka-cicsbundle/build/distributions/*.zip user@zos:/path/to/bundles/
    ```
 
 2. **Extract on z/OS:**
    ```bash
    # On z/OS
    cd /path/to/bundles
-   jar xf com.ibm.cicsdev.springboot.kafka.bundle-1.0.0.zip
+   jar xf cics-java-liberty-springboot-kafka-cicsbundle-1.0.0.zip
    ```
 
 3. **Define CICS BUNDLE resource:**
    ```
-   CEDA DEFINE BUNDLE(KAFKABUN) 
-        GROUP(MYGROUP) 
-        BUNDLEDIR(/path/to/bundles/com.ibm.cicsdev.springboot.kafka.bundle-1.0.0)
+   CEDA DEFINE BUNDLE(KAFKABUN)
+        GROUP(MYGROUP)
+        BUNDLEDIR(/path/to/bundles/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0)
    ```
 
 4. **Install the bundle:**
@@ -743,7 +743,7 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
 3. **Configure Bundle Project:**
    - **Project name**: `cics-springboot-kafka-bundle` (or your preferred name)
    - **Target platform**: Select your CICS TS version (e.g., CICS TS 6.3)
-   - **Bundle ID**: `com.ibm.cicsdev.springboot.kafka.bundle` (must be unique in CICS region)
+   - **Bundle ID**: `cics-java-liberty-springboot-kafka-cicsbundle` (must be unique in CICS region)
    - Click **Finish**
 
 4. **Add WAR Bundle Part:**
@@ -759,7 +759,7 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    - **JVM server**: Select or specify your Liberty JVM server name (e.g., `DFHWLP`)
    - **WAR file location**:
      - Click **Browse** or **Workspace**
-     - Navigate to: `com.ibm.cicsdev.springboot.kafka.app/build/libs/cics-java-liberty-springboot-kafka.war`
+     - Navigate to: `cics-java-liberty-springboot-kafka-app/build/libs/cics-java-liberty-springboot-kafka.war`
      - Or use **File System** to select the WAR from your build output directory
    - Click **Finish**
 
@@ -779,7 +779,7 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    <?xml version="1.0" encoding="UTF-8"?>
    <cicsbundle xmlns="http://www.ibm.com/xmlns/prod/cics/bundle"
                 version="1.0"
-                id="com.ibm.cicsdev.springboot.kafka.bundle">
+                id="cics-java-liberty-springboot-kafka-cicsbundle">
        <define name="springboot-kafka-app"
                type="http://www.ibm.com/xmlns/prod/cics/bundle/WAR"
                path="springboot-kafka-app.warbundle"/>
@@ -891,7 +891,7 @@ CEDA INSTALL BUNDLE(KFKABNDL) GROUP(KAFKAGRP)
 
 1. **Upload WAR to zFS:**
    ```bash
-   scp com.ibm.cicsdev.springboot.kafka.app/build/libs/*.war user@zos:/path/to/liberty/apps/
+   scp cics-java-liberty-springboot-kafka-app/build/libs/*.war user@zos:/path/to/liberty/apps/
    ```
 
 2. **Add to server.xml:**
