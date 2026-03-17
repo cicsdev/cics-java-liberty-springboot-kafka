@@ -16,7 +16,7 @@ version = '1.0.0'
 // ============================================================================
 dependencies {
     // Application WAR from sibling project
-    cicsBundlePart project(path: ':com.ibm.cicsdev.springboot.kafka.app', configuration: 'archives')
+    cicsBundlePart project(path: ':cics-java-liberty-springboot-kafka-app', configuration: 'archives')
 }
 
 // ============================================================================
