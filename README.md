@@ -4,7 +4,9 @@
 
 ## Overview
 
-This sample demonstrates how to integrate Apache Kafka with IBM CICS using Spring Boot, deployed as a WAR file to a CICS Liberty JVM server on z/OS. It serves as both a working example and an educational tutorial for developers learning to build enterprise-grade Kafka consumers in a mainframe environment.
+This sample demonstrates how to integrate Apache Kafka with IBM CICS using Spring Boot, deployed as a WAR file to a CICS Liberty JVM server on z/OS. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.
+
+The sample follows CICSDev best practices and is intended both as a runnable example and as an educational reference for developers learning to build enterprise-grade Kafka consumers.
 
 **What This Sample Does:**
 - Consumes messages from multiple Kafka topics asynchronously
