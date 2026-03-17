@@ -522,7 +522,7 @@ Before building:
 ## Requirements
 
 ### Workstation Requirements
-* **Java:** JDK 17 or later
+* **Java:** IBM Semeru Runtime Open Edition 17 or later
 * **Build Tools:**
   - **Gradle:** Recommended: 8.0+ - included via wrapper
   - **Maven:** Recommended: 3.9.0+ - included via wrapper
@@ -532,9 +532,10 @@ Before building:
   - Command line (no IDE required if using wrappers)
 
 ### z/OS Requirements
-* **CICS TS:** V6.3 or later
+* **CICS TS:** Requires APAR PHnnnn for V6.3.
+  <!-- TODO: Update APAR number when available.-->
 * **WebSphere Liberty:** Included with CICS
-* **Java:** IBM Java 17 or later on z/OS
+* **Java:** IBM Semeru Runtime 17 or later on z/OS
 * **Kafka:** Apache Kafka
 
 ### Network Requirements
@@ -581,7 +582,7 @@ cics-java-liberty-springboot-kafka/
 ├── etc/config/
 │   ├── liberty/
 │   │   └── server.xml                           # Liberty server template
-│   └── eclipse_projects/
+│   └── cics_bundle_project/
 │       └── cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
 │           └── ...                              # CICS Explorer bundle project
 │
@@ -688,7 +689,7 @@ mvnw.cmd clean package
 
 ## Deploying to CICS
 
-### Method 1: CICS Bundle Deployment (Recommended)
+### Method 1: CICS Bundle Deployment
 
 1. **Upload the bundle ZIP to zFS:**
    ```bash
@@ -741,7 +742,7 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    - Click **Next**
 
 3. **Configure Bundle Project:**
-   - **Project name**: `cics-springboot-kafka-bundle` (or your preferred name)
+   - **Project name**: `cics-java-liberty-springboot-kafka-cicsbundle` (or your preferred name)
    - **Target platform**: Select your CICS TS version (e.g., CICS TS 6.3)
    - **Bundle ID**: `cics-java-liberty-springboot-kafka-cicsbundle` (must be unique in CICS region)
    - Click **Finish**
@@ -755,7 +756,7 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    - Or: Right-click on project → **New → Other... → CICS → WAR Bundle Part**
    
 5. **Configure WAR Bundle Part:**
-   - **Name**: `springboot-kafka-app` (this becomes the CICS PROGRAM name)
+   - **Name**: `cics-java-liberty-springboot-kafka` (this becomes the CICS PROGRAM name)
    - **JVM server**: Select or specify your Liberty JVM server name (e.g., `DFHWLP`)
    - **WAR file location**:
      - Click **Browse** or **Workspace**
@@ -767,11 +768,11 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    
    The bundle project now contains:
    ```
-   cics-springboot-kafka-bundle/
+   cics-java-liberty-springboot-kafka-cicsbundle-/
    ├── META-INF/
    │   └── cics.xml          # Bundle manifest (defines bundle contents)
    ├── .project              # Eclipse project file
-   └── springboot-kafka-app.warbundle  # WAR bundle part descriptor
+   └── cics-java-liberty-springboot-kafka.warbundle  # WAR bundle part descriptor
    ```
 
    **Understanding cics.xml:**
@@ -780,9 +781,9 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    <cicsbundle xmlns="http://www.ibm.com/xmlns/prod/cics/bundle"
                 version="1.0"
                 id="cics-java-liberty-springboot-kafka-cicsbundle">
-       <define name="springboot-kafka-app"
+       <define name="cics-java-liberty-springboot-kafka"
                type="http://www.ibm.com/xmlns/prod/cics/bundle/WAR"
-               path="springboot-kafka-app.warbundle"/>
+               path="cics-java-liberty-springboot-kafka.warbundle"/>
    </cicsbundle>
    ```
    - `id`: Unique identifier for this bundle in CICS
@@ -792,7 +793,7 @@ A CICS bundle is a deployment package that can contain multiple resources (WARs,
    **Understanding .warbundle file:**
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <warbundle symbolicname="springboot-kafka-app"
+   <warbundle symbolicname="cics-java-liberty-springboot-kafka"
               jvmserver="DFHWLP">
        <war path="cics-java-liberty-springboot-kafka.war"/>
    </warbundle>
@@ -813,7 +814,7 @@ This step deploys your bundle to z/OS and makes it available to CICS.
 2. **Specify Bundle Deployment Location:**
    
    Choose where on z/OS to deploy the bundle:
-   - **Target directory**: `/u/cicsts/bundles/cics-springboot-kafka-bundle`
+   - **Target directory**: `/u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle`
    
    **Important Path Considerations:**
    - Ensure the CICS region user has read/execute permissions
@@ -824,7 +825,7 @@ This step deploys your bundle to z/OS and makes it available to CICS.
    - **Bundle definition name**: `KFKABNDL` (8-character CICS resource name)
      - Must be unique in the CICS region
      - Used to install/enable/disable the bundle
-   - **CICS group**: `KAFKAGRP` (optional, for resource grouping)
+   - **CICS group**: `MYGROUP` (optional, for resource grouping)
    - **Description**: `Spring Boot Kafka Consumer Bundle`
    
    Click **Finish** to start the export
@@ -841,34 +842,42 @@ This step deploys your bundle to z/OS and makes it available to CICS.
    **Console Output Example:**
    ```
    Connecting to zos.example.com...
-   Creating directory /u/cicsts/bundles/cics-springboot-kafka-bundle
+   Creating directory /u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle_1.0.0
    Export completed successfully
    ```
 
-#### Step 3: Install and Enable the Bundle in CICS
+#### Step 3: Install the Bundle in CICS
 
-After export, you need to install the bundle in your CICS region:
+After export, you need to define and install the bundle in your CICS region:
 
-**Option A: Using CICS Explorer**
+**Define the Bundle**
+Create the bundle definition in the CICS System Definition (CSD):
+
+```
+CEDA DEFINE BUNDLE(KFKABNDL)
+     GROUP(MYGROUP)
+     BUNDLEDIR(/u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle_1.0.0)
+     STATUS(ENABLED)
+```
+
+**Install the Bundle**
+```
+CEDA INSTALL BUNDLE(KFKABNDL) GROUP(MYGROUP)
+```
+
+**Enable the Bundle (If Needed)**
+If the bundle was not enabled during definition:
+
+```
+CEDA SET BUNDLE(KFKABNDL) ENABLED
+```
+
+**Alternative: Using CICS Explorer**
 1. In CICS Explorer, navigate to **CICS SM** (Systems Management) view
 2. Expand your CICS region → **Bundle Definitions**
 3. Right-click on `KFKABNDL` → **Install**
-4. Right-click on `KFKABNDL` → **Enable**
 
-**Option B: Using CICS Commands (CEMT)**
-```
-CEMT SET BUNDLE(KFKABNDL) INSTALL
-CEMT SET BUNDLE(KFKABNDL) ENABLE
-```
-
-**Option C: Using CICS Resource Definitions (CSD)**
-```
-CEDA DEFINE BUNDLE(KFKABNDL)
-     GROUP(KAFKAGRP)
-     BUNDLEDIR(/u/cicsts/bundles/cics-springboot-kafka-bundle)
-     STATUS(ENABLED)
-CEDA INSTALL BUNDLE(KFKABNDL) GROUP(KAFKAGRP)
-```
+**Note**: If the bundle definition does not exist, it will not appear in this view.
 
 #### Step 4: Verify Deployment
 
@@ -941,18 +950,7 @@ Started listener for topic=test-topic
 
 ---
 
-### Step 3: Send Test Messages to Kafka
-
-**Using kafka-console-producer:**
-```bash
-kafka-console-producer --broker-list <broker>:9092 --topic test-topic
-> Hello from Kafka!
-> This is a test message
-```
-
----
-
-### Step 4: Verify Message Processing
+### Step 3: Verify Message Processing
 
 Check Liberty messages.log:
 ```
@@ -970,7 +968,7 @@ You should see tasks running with transaction ID `KAFK` (or whatever you configu
 
 ---
 
-### Step 5: Stop the Consumer
+### Step 4: Stop the Consumer
 
 ```bash
 curl -X POST "http://hostname:9080/cics-java-liberty-springboot-kafka/control/stop?topic=test-topic" \
