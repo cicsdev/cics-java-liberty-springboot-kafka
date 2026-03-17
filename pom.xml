@@ -56,8 +56,8 @@
     <!-- Modules                                                          -->
     <!-- ================================================================ -->
     <modules>
-        <module>com.ibm.cicsdev.springboot.kafka.app</module>
-        <module>com.ibm.cicsdev.springboot.kafka.bundle</module>
+        <module>cics-java-liberty-springboot-kafka-app</module>
+        <module>cics-java-liberty-springboot-kafka-cicsbundle</module>
     </modules>
   
 </project>
