@@ -695,7 +695,7 @@ Here, the bundle project is already provided and does not need to be created fro
    
    The bundle project now contains:
    ```
-   cics-java-liberty-springboot-kafka-cicsbundle-/
+   cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
    ├── META-INF/
    │   └── cics.xml          # Bundle manifest (defines bundle contents)
    ├── .project              # Eclipse project file
@@ -705,17 +705,15 @@ Here, the bundle project is already provided and does not need to be created fro
    **Understanding cics.xml:**
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <cicsbundle xmlns="http://www.ibm.com/xmlns/prod/cics/bundle"
-                version="1.0"
-                id="cics-java-liberty-springboot-kafka-cicsbundle">
-       <define name="cics-java-liberty-springboot-kafka"
-               type="http://www.ibm.com/xmlns/prod/cics/bundle/WAR"
-               path="cics-java-liberty-springboot-kafka.warbundle"/>
-   </cicsbundle>
+   <manifest xmlns="http://www.ibm.com/xmlns/prod/cics/bundle" bundleMajorVer="1" bundleMicroVer="0" bundleMinorVer="0" bundleRelease="0" bundleVersion="1" id="cics-java-liberty-springboot-kafka-cicsbundle">
+      <meta_directives>
+         <timestamp>2026-03-17T12:06:14.389297Z</timestamp>
+      </meta_directives>
+      <define name="cics-java-liberty-springboot-kafka" path="cics-java-liberty-springboot-kafka.warbundle" type="http://www.ibm.com/xmlns/prod/cics/bundle/WARBUNDLE"/>
+   </manifest>
    ```
    - `id`: Unique identifier for this bundle in CICS
    - `define`: References the WAR bundle part
-   - `path`: Location of the .warbundle descriptor file
 
    **Understanding .warbundle file:**
    ```xml
