@@ -72,11 +72,16 @@ public class KafkaConsumerService
 
     /**
      * Common batch handler:
-     * 
+     *
      * <p>
      * - Gets per-topic Subject captured at /control/start <br>
      * - Sets RunAs ONCE per consumer thread(first batch) with safe exception handling <br>
      * - Submits each record to the existing async processor
+     *
+     * <p>
+     * Spring Kafka creates long-lived consumer threads. We set the RunAs identity once when the batch arrives.
+     * All subsequent work on this thread inherits this identity. Liberty's ManagedExecutorService will propagate this
+     * to worker threads.
      */
     private void handleBatch(String topic, List<ConsumerRecord<String, String>> batch)
     {

@@ -51,9 +51,15 @@ public class KafkaBatchConfig
 
 
     /**
-     * Create a batch-enabled container factory that reuses Spring Boot's auto-configured ConsumerFactory. <br>
-     * Spring Boot already provides a default KafkaListenerContainerFactory from properties; we’re only adding a
+     * Create a batch-enabled container factory that reuses Spring Boot's auto-configured ConsumerFactory.
+     *
+     * <p>
+     * Spring Boot already provides a default KafkaListenerContainerFactory from properties; we're only adding a
      * dedicated one named "batchFactory" with setBatchListener(true).
+     *
+     * <p>
+     * Batch processing is more efficient than processing one message at a time. setConcurrency(3) creates 3 consumer
+     * threads per topic.
      */
     @Bean(name = "batchFactory")
     public ConcurrentKafkaListenerContainerFactory<String, String> batchFactory(
@@ -66,7 +72,7 @@ public class KafkaBatchConfig
         // Enable batch delivery
         factory.setBatchListener(true);
 
-        // Optional: normally 1 is fine, but let's assume scale
+        // Scale with multiple consumer threads
         factory.setConcurrency(3);
 
         // Keep other defaults from properties (ack mode, poll timeout, etc.)

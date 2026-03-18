@@ -51,6 +51,11 @@ public class KafkaMessageProcessor
     /**
      * Processes a Kafka message asynchronously.
      *
+     * <p>
+     * ManagedExecutorService is provided by Liberty. It creates threads that are CICS-aware (can
+     * call Task.getTask()). CICSTransactionRunnable ensures work runs in a CICS transaction. The transaction ID is
+     * determined dynamically based on the topic.
+     *
      * @param record
      */
     public void processAsynchronous(ConsumerRecord<String, String> record)
@@ -62,6 +67,9 @@ public class KafkaMessageProcessor
 
     /**
      * Runnable wrapper that executes a Kafka message within a CICS transaction.
+     *
+     * <p>
+     * This runs on a CICS-aware thread created by Liberty's ManagedExecutorService.
      */
     private static class KafkaCICSTransactionRunnable implements CICSTransactionRunnable
     {
@@ -106,6 +114,7 @@ public class KafkaMessageProcessor
         @Override
         public String getTranid()
         {
+            // Map topic to transaction ID dynamically
             return config.getTranIdForTopic(record.topic());
         }
     }
