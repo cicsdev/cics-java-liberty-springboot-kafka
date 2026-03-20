@@ -611,10 +611,11 @@ mvnw.cmd clean package
 
 ### Option 3: Building with Eclipse
 
-1. **Import Projects:**
-   - File → Import → General → Existing Projects into Workspace
-   - Select the root directory
-   - Import all projects
+1. **Clone and Import Repository:**
+   - File → Import → Git → Projects from Git → Clone URI
+   - Enter the repository URL
+   - Ensure "Import existing Eclipse projects" box is checked
+   - Complete the wizard to clone and import the projects
 
 2. **Resolve Build Path (if needed):**
    - Right-click project → Properties → Java Build Path → Libraries
@@ -663,35 +664,24 @@ This method uses IBM CICS Explorer (an Eclipse-based IDE) to create a CICS bundl
 - SSH/SFTP access to z/OS UNIX System Services (USS)
 - CICS region configured and running
 
-#### Step 1: Import and Review CICS Bundle Project in Eclipse
+#### Step 1: Review CICS Bundle Project in Eclipse
 
 A CICS bundle is a deployment package that can contain multiple resources (WARs, JARs, OSGi bundles, etc.) and their metadata.
-Here, the bundle project is already provided and does not need to be created from scratch.
+The bundle project is already provided in the repository (imported when you cloned the repo).
 
-1. **Open CICS Explorer**
-   - Launch Eclipse with CICS Explorer plugins installed
-
-2. **Import Existing CICS Bundle Project:**
-   - Navigate to: File → Import...
-   - Select General → Existing Projects into Workspace
-   - Click Next
-   - Browse to the directory: etc/config/cics_bundle_project
-   - Select the provided bundle project
-   - Click Finish 
-
-3. **Review the Bundle Project:**
+1. **Locate the Bundle Project:**
     In Project Explorer, locate the imported bundle project
     (e.g., cics-java-liberty-springboot-kafka-cicsbundle).
 
     Look into the project to verify its structure and contents.
 
-4. **Verify WAR Bundle Part Configuration:**
+2. **Verify WAR Bundle Part Configuration:**
     - Locate the .warbundle file
     - Confirm the following:
         JVM server is correctly specified (e.g., DFHWLP)
         WAR file path points to the correct application artifact
 
-5. **Review Generated Files:**
+3. **Review Generated Files:**
    
    The bundle project now contains:
    ```
@@ -744,31 +734,9 @@ This step deploys your bundle to z/OS and makes it available to CICS.
    **Important Path Considerations:**
    - The directory will be created if it doesn't exist
 
-    Click **Finish** to start the export
+   Click **Finish** to start the export.
 
-3. **Monitor Export Progress:**
-   
-   The export process:
-   - Creates target directory structure
-   - Uploads bundle files (cics.xml, .warbundle, WAR file)
-   
-   **Console Output Example:**
-   ```
-   z/OS UNIX folder=/u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle_1.0.0/ - created
-   .....
-   ```
-
-4. **Set permissions for the bundle so CICS can access it:**
-
-    - Open the terminal SSH into the server. 
-    - Use the chmod command to recursively set the correct permissions for the bundle directory and its contents.
-    - Execute the following command:
-
-    ```
-    chmod -R 755 /u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle_1.0.0/ 
-    ```
-
-    This ensures that the CICS region user has the necessary read and execute permissions.
+   Ensure that the CICS region user has read and write access to the bundle directory structure.
 
 #### Step 3: Define and Install the Bundle in CICS
 
