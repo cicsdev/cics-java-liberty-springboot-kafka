@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>cics-java-liberty-kafka-app</name>
+	<name>cics-java-liberty-springboot-kafka-app</name>
 	<comment></comment>
 	<projects>
 	</projects>

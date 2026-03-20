@@ -1,11 +1,11 @@
 // ============================================================================
 // Root Project Configuration
 // ============================================================================
-rootProject.name = 'com.ibm.cicsdev.springboot.kafka'
+rootProject.name = 'cics-java-liberty-springboot-kafka'
 
 // ============================================================================
 // Subprojects
 // ============================================================================
-include(':com.ibm.cicsdev.springboot.kafka.app')
-include(':com.ibm.cicsdev.springboot.kafka.bundle')
+include(':cics-java-liberty-springboot-kafka-app')
+include(':cics-java-liberty-springboot-kafka-cicsbundle')
 

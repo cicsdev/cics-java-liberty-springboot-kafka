@@ -16,7 +16,7 @@
     <!-- ================================================================ -->
     <!-- Project Coordinates                                              -->
     <!-- ================================================================ -->
-    <artifactId>com.ibm.cicsdev.springboot.kafka.bundle</artifactId>
+    <artifactId>cics-java-liberty-springboot-kafka-cicsbundle</artifactId>
     <packaging>cics-bundle</packaging>
     <name>CICS Kafka Springboot - CICS Bundle</name>
 
@@ -27,7 +27,7 @@
         <!-- Application WAR -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>com.ibm.cicsdev.springboot.kafka.app</artifactId>
+            <artifactId>cics-java-liberty-springboot-kafka-app</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
@@ -42,7 +42,7 @@
             <plugin>
                 <groupId>com.ibm.cics</groupId>
                 <artifactId>cics-bundle-maven-plugin</artifactId>
-                <version>1.0.7</version>
+                <version>1.0.8</version>
                 <extensions>true</extensions>
                 <configuration>
                     <defaultjvmserver>${cics.jvmserver}</defaultjvmserver>

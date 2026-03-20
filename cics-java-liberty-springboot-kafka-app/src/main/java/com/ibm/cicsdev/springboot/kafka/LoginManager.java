@@ -20,6 +20,10 @@ import javax.security.auth.login.LoginException;
 
 /**
  * LoginManager performs **programmatic JAAS login** using Liberty <authData> credentials.
+ *
+ * <p>
+ * Credentials are stored securely in server.xml (AES-encrypted). No passwords in application code. Subject is cached
+ * to avoid expensive repeated logins.
  */
 public class LoginManager
 {
@@ -66,15 +70,15 @@ public class LoginManager
     {
         try
         {
-            // 1) Obtain credentials from server.xml <authData>
+            // 1. Get credentials from server.xml <authData> element
             AuthData ad = AuthDataProvider.getAuthData(alias);
             String user = ad.getUserName();
 
-            // Liberty decodes the {aes} password generated with securityUtility offline
+            // Liberty decrypts {aes} password
             char[] pwdChars = ad.getPassword();
             String password = new String(pwdChars);
 
-            // 2) Programmatic JAAS login
+            // 2. Perform JAAS login
             LoginContext lc = new LoginContext("system.DEFAULT", new WSCallbackHandlerImpl(user, password));
             lc.login();
             return lc.getSubject();

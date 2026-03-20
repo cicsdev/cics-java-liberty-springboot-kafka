@@ -1,326 +1,264 @@
 # cics-java-liberty-springboot-kafka
+
 [![Build](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/java.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/java.yaml)
 
-This project demonstrates a Spring Boot–based Kafka consumer integrated with IBM CICS and deployed as a WAR to a CICS Liberty JVM server on z/OS. The application processes Kafka messages asynchronously under the caller’s security context and avoids clear-text credentials by storing them as AES-encrypted values in Liberty server.xml, with the AES key held in a RACF key ring. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.It also demonstrates configurable workload classification onto CICS transactions (as well as security).
+## Overview
 
-The sample follows CICSDev best practices and is intended both as a runnable example and as an educational reference.
+This sample demonstrates how to integrate Apache Kafka with IBM CICS using Spring Boot, deployed as a WAR file to a CICS Liberty JVM server on z/OS. The sample includes both Gradle and Maven build configurations for use in Eclipse or standalone build environments.
 
-- [com.ibm.cicsdev.springboot.kafka](/) - Top-level project.
-- [com.ibm.cicsdev.springboot.kafka.app](./com.ibm.cicsdev.springboot.kafka.app) - Main application project.
-- [com.ibm.cicsdev.springboot.kafka.bundle](./com.ibm.cicsdev.springboot.kafka.bundle) - CICS bundle plug-in based project, contains application and KAFK transaction bundle-parts. Use with Gradle and Maven builds.
-- [etc/config/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle](./etc/config/eclipse_projects/com.ibm.cicsdev.springboot.examples.kafka.bundle) - CICS Explorer based CICS bundle project, contains application and KAFK transaction bundle-parts. Use with CICS Explorer 'Export to zFS' deployment capability.
-- [etc/config/liberty/server.xml](./etc/config/liberty/server.xml) - A template `server.xml` demonstrating the minimum configuration required to run the sample.
+The sample is intended both as a runnable example and as an educational reference for developers learning to build enterprise-grade Kafka consumers.
 
----
-
-## Requirements
-* Java 17 or later on the workstation
-   For Java 17+ support, ensure you have:
-
-    * **Gradle**: Version 7.3 or later (recommended: 8.0+)
-      - Gradle 7.3+ is required for Java 17 support
-      - Gradle 8.x provides better Java 17-21 compatibility
-      
-    * **Maven**: Version 3.8.1 or later (recommended: 3.9.0+)
-      - Maven 3.8.1+ is required for Java 17 support
-      - Maven 3.9.x provides improved performance and Java 17+ compatibility
-
-    **Note**: The included Gradle and Maven wrapper scripts are pre-configured with compatible versions.
-* WebSphere Liberty
-* One of the following on your workstation:
-  Eclipse with the IBM CICS SDK for Java EE, Jakarta EE and Liberty
-  An IDE of your choice that supports Gradle or Maven (or can run the Wrappers)
-  A command line, to run the Wrappers or to invoke a locally installed version of Gradle or Maven
+**What This Sample Does:**
+- Consumes messages from multiple Kafka topics asynchronously
+- Processes each message within a CICS transaction context
+- Demonstrates security identity propagation in Liberty
+- Shows how to map different topics to different CICS transaction IDs
+- Provides two alternative security approaches for credential management
 
 ---
 
-## Downloading
-Clone the repository using your IDEs support, such as the Eclipse Git plugin
-or, download the sample as a ZIP and unzip onto the workstation
->*Tip: Eclipse Git provides an 'Import existing Projects' check-box when cloning a repository.*
+## Table of Contents
 
-### Check dependencies
-If you are building this sample with Gradle or Maven you should verify that the correct CICS TS bill of materials (BOM) is specified for your target release of CICS. The BOM specifies a consistent set of artifacts, and adds information about their scope. In the example below the version specified is compatible with CICS TS V6.3, or newer. You can browse the published versions of the CICS BOM at Maven Central.
-
-Gradle (build.gradle):
-
-compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:6.3-20250905155520")
-
-Maven (POM.xml):
-
-``` xml
-<dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.ibm.cics</groupId>
-        <artifactId>com.ibm.cics.ts.bom</artifactId>
-        <version>6.3-20250905155520</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  ```
+1. [Design and Architecture](#design-and-architecture)
+2. [How It Works](#how-it-works)
+3. [Security Models Explained](#security-models-explained)
+4. [Before You Start: Files to Modify](#before-you-start-files-to-modify)
+5. [Requirements](#requirements)
+6. [Project Structure](#project-structure)
+7. [Configuration Guide](#configuration-guide)
+8. [Building the Sample](#building-the-sample)
+9. [Deploying to CICS](#deploying-to-cics)
+   - [Method 1: Using a CICS Bundle](#method-1-using-a-cics-bundle)
+   - [Method 2: Using CICS Explorer](#method-2-using-cics-explorer)
+   - [Method 3: Direct Liberty Deployment](#method-3-direct-liberty-deployment)
+   - [Common Bundle Installation Steps](#common-bundle-installation-steps)
+10. [Running the Sample](#running-the-sample)
+11. [Troubleshooting](#troubleshooting)
+12. [License](#license)
 
 ---
 
-## Building the sample
+## Design and Architecture
 
-You can build the sample in a variety of ways:
+### High-Level Design Intent
 
-- Using the implicit compile/build of the Eclipse based CICS Explorer SDK
-- Using the built-in Gradle or Maven support of your IDE (For example: buildship or m2e in Eclipse which integrate with the "Run As..." menu.)
-- Using the supplied Gradle or Maven Wrapper scripts (no requirement for an IDE or Gradle/Maven install) or you can build it from the command line if you have Gradle or Maven installed on your workstation
+This sample addresses a fundamental challenge: **how to safely consume Kafka messages within CICS transactions while maintaining security context**.
 
-Important
+This sample has the following components:
 
-The sample comes pre-configured for use with a JDK 17 and CICS TS V6.3 Libraries. When you initially import the project to your IDE, if your IDE is not configured for a JDK 17, or does not have CICS Explorer SDK installed, you might experience local project compile errors. To resolve issues you should configure the Project's build-path to add/remove your preferred combination of CICS TS, JDK, and Liberty's Enterprise Java libraries (Jakarta EE). Resolving errors might also depend on how you wish to build and deploy the sample. If you are building and deploying through CICS Explorer SDK and 'Export to zFS' you should edit the link-app's Project properties. Select 'Java Build Path', on the Libraries tab select 'Classpath', click 'Add Library', select 'CICS with Enterprise Java and Liberty' Library, and choose the appropriate CICS and Enterprise Java versions. 
+1. **Uses Liberty's ManagedExecutorService** - Ensures threads are CICS-aware
+2. **Explicit Security Context Propagation** - Captures and applies security identity.
+3. **Per-Topic Transaction Mapping** - Routes messages to appropriate CICS transactions based on topic
+4. **Controlled Lifecycle Management** - Allows dynamic start/stop of topic consumers via REST endpoints
 
-The required build-tasks are typically `clean bootWar` for Gradle and `clean package` for Maven. Once run, Gradle will generate a WAR file in the `build/libs` directory, while Maven will generate it in the `target` directory.
+### Architecture Diagram
 
-**Note:** When building a WAR file for deployment to Liberty it is good practice to exclude Tomcat from the final runtime artifact. We demonstrate this in the pom.xml with the *provided* scope, and in build.gradle with the *providedRuntime()* dependency.
+**Alternative A: Subject-Based RunAs Identity (Default)**
 
-*Note:** If you are building and deploying with Gradle or Maven then you don't necessarily need to fix the local errors, but to do so, you can do as above, or you can run a tooling refresh on the cics-java-liberty-springboot-kafka project. For example, in Eclipse: right-click on "Project", select "Gradle -> Refresh Gradle Project", or right-click on "Project", select "Maven -> Update Project..."..
-
->Tip: *In Eclipse, Gradle (buildship) is able to fully refresh and resolve the local classpath even if the project was previously updated by Maven. However, Maven (m2e) does not currently reciprocate that capability. If you previously refreshed the project with Gradle, you'll need to manually remove the 'Project Dependencies' entry on the Java build-path of your Project Properties to avoid duplication errors when performing a Maven Project Update.*  
-
-#### Option 1: Building with Gradle
-
-For a complete build you should run the settings.gradle file in the top-level 'com.ibm.cicsdev.springboot.kafka' directory which is designed to invoke the individual build.gradle files for each project.
-
-If successful, a WAR file is created inside the com.ibm.cicsdev.springboot.kafka.app/build/libs and  and a CICS bundle ZIP file inside the com.ibm.cicsdev.springboot.kafka.bundle/build/distribution directory.
-
-[!NOTE] In Eclipse, the output 'build' directory is often hidden by default. From the Package Explorer panel, select the three dot menu, choose filters and un-check the Gradle build folder to view its contents.
-
-The JVM server the CICS bundle is targeted at is controlled through the cics.jvmserver property, defined in the com.ibm.cicsdev.springboot.kafka.bundle/build.gradle file, or alternatively can be set on the command line:
-
-Gradle Wrapper (Linux/Mac):
-
-On Linux or Mac:
-
-```shell
-./gradlew clean bootWar
 ```
-On Windows:
-
-```shell
-gradlew.bat clean bootWar
+┌─────────────────────────────────────────────────────────────────┐
+│                         Kafka Cluster                           │
+│                    (topics: orders, test-topic)                 │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             │ Messages
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    CICS Liberty JVM Server                      │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │              Spring Boot Application (WAR)                │  │
+│  │                                                           │  │
+│  │  ┌──────────────────────────────────────────────────┐     │  │
+│  │  │         KafkaController (REST Endpoint)          │     │  │
+│  │  │  • /control/start?topic=xxx                      │     │  │
+│  │  │  • /control/stop?topic=xxx                       │     │  │
+│  │  │  • Captures caller's Subject (HTTP auth)         │     │  │
+│  │  └────────────┬─────────────────────────────────────┘     │  │
+│  │               │                                           │  │
+│  │               ▼                                           │  │
+│  │  ┌──────────────────────────────────────────────────┐     │  │
+│  │  │      KafkaConsumerService (Listeners)            │     │  │
+│  │  │  • @KafkaListener per topic                      │     │  │
+│  │  │  • Sets RunAs Subject on consumer thread         │     │  │
+│  │  │  • Receives batches of messages                  │     │  │
+│  │  └────────────┬─────────────────────────────────────┘     │  │
+│  │               │                                           │  │
+│  │               ▼                                           │  │
+│  │  ┌──────────────────────────────────────────────────┐     │  │
+│  │  │      KafkaMessageProcessor                       │     │  │
+│  │  │  • Submits to ManagedExecutorService             │     │  │
+│  │  │  • Wraps in CICSTransactionRunnable              │     │  │
+│  │  └────────────┬─────────────────────────────────────┘     │  │
+│  │               │                                           │  │
+│  │               ▼                                           │  │
+│  │  ┌──────────────────────────────────────────────────┐     │  │
+│  │  │   Liberty ManagedExecutorService                 │     │  │
+│  │  │  • CICS-aware thread pool                        │     │  │
+│  │  │  • Inherits RunAs Subject                        │     │  │
+│  │  └────────────┬─────────────────────────────────────┘     │  │
+│  │               │                                           │  │
+│  │               ▼                                           │  │
+│  │  ┌──────────────────────────────────────────────────┐     │  │
+│  │  │   CICSTransactionRunnable.run()                  │     │  │
+│  │  │  • Executes under CICS transaction               │     │  │
+│  │  │  • Transaction ID from KafkaBatchConfig          │     │  │
+│  │  │  • Processes message business logic              │     │  │
+│  │  └──────────────────────────────────────────────────┘     │  │
+│  │                                                           │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Minimum Maven Version**: 3.8.1+ (Java 17 support)
-The Maven wrapper included in this project uses Maven 3.9.x, which fully supports Java 17-21.
+**Alternative B: authData-Based Identity with Programmatic Login**
 
-#### Option 2: Building with Apache Maven
-For a complete build you should run the pom.xml file in the top-level 'com.ibm.cicsdev.springboot.kafka' directory. A WAR file is created inside the com.ibm.cicsdev.springboot.kafka.app/target directory and a CICS bundle ZIP file inside the com.ibm.cicsdev.springboot.kafka.bundle/target directory.
+The architecture is identical to Alternative A, with one key difference in the KafkaController:
 
-If building a CICS bundle ZIP the CICS JVM server name for the WAR bundle part should be modified in the cics.jvmserver property, defined in com.ibm.cicsdev.springboot.kafka/pom.xml file under the defaultjvmserver configuration property, or alternatively can be set on the command line.
-
-Maven Wrapper (Linux/Mac):
-
-```shell
-./mvnw clean package
+```
+┌──────────────────────────────────────────────────┐
+│         KafkaController (REST Endpoint)          │
+│  • /control/start?topic=xxx                      │
+│  • /control/stop?topic=xxx                       │
+│  • Uses LoginManager.getSubject()                │  ← Different from Alternative A
+│    (programmatic login with authData)            │
+└──────────────────────────────────────────────────┘
+         │
+         ▼
+    (rest of flow identical to Alternative A)
 ```
 
-On Windows:
+**Key Difference:**
+- **Alternative A:** Subject from authenticated HTTP request (`WSSubject.getCallerSubject()`)
+- **Alternative B:** Subject from programmatic login (`LoginManager.getSubject()` using server.xml authData)
+- **Both:** Use the same RunAs mechanism (`WSSubject.setRunAsSubject(subject)`)
 
-```shell
-mvnw.cmd clean package
-```
+See [Security Models Explained](#security-models-explained) for detailed comparison.
 
-This creates a WAR file inside the `target` directory.
+### Component Responsibilities
 
-**Minimum Gradle Version**: 7.3+ (Java 17 support)
-The Gradle wrapper included in this project uses Gradle 8.x, which fully supports Java 17-21.
-
-#### Option 3: Building with Eclipse
-If you are using the Egit client to clone the repo, remember to tick the button to import all projects. Otherwise, you should manually Import the projects into CICS Explorer using File → Import → General → Existing projects into workspace, then follow the error resolution advice above.
+| Component | Purpose | Key Methods/Annotations |
+|-----------|---------|------------------------|
+| **KafkaApplication** | Spring Boot entry point | `@SpringBootApplication` |
+| **KafkaController** | REST API for lifecycle control | `/start`, `/stop`, captures Subject |
+| **KafkaConsumerService** | Per-topic Kafka listeners | `@KafkaListener`, sets RunAs Subject |
+| **KafkaMessageProcessor** | Async message processing | Submits to ManagedExecutorService |
+| **KafkaBatchConfig** | Topic-to-transaction mapping | `getTranIdForTopic()` |
+| **LoginManager** | Alternative: Subject via programmatic login | JAAS login using authData (optional) |
 
 ---
 
-## Deploying to a CICS Liberty JVM server
+## How It Works
 
-- Ensure you have the following features defined in your Liberty `server.xml`:           
-    - `<servlet-6.0>` depending on the version of Java EE in use.  
-    - `<cicsts:security-1.0>` if CICS security is enabled.
+### Message Flow (Step-by-Step)
 
-``` XML
-<featureManager>
-        <feature>appSecurity-5.0</feature>
-        <feature>cicsts:security-1.0</feature>
-        <feature>concurrent-3.0</feature>
-        <feature>servlet-6.0</feature>
-        <feature>jdbc-4.3</feature>
-</featureManager>
+1. **User Initiates Consumer**
+   - HTTP GET/POST to `/control/start?topic=orders`
+   - KafkaController obtains a Subject (security identity):
+     - **Alternative A (default):** Captures caller's Subject from HTTP request
+     - **Alternative B:** Uses LoginManager to get Subject from authData
+   - Subject is stored in a map keyed by topic name
+   - Spring Kafka listener container for that topic is started
+
+2. **Kafka Messages Arrive**
+   - Spring Kafka polls the broker and receives a batch of messages
+   - Messages are delivered to the appropriate `@KafkaListener` method in KafkaConsumerService
+   - Example: `onOrdersBatch()` for the "orders" topic
+
+3. **Security Context is Applied**
+   - The consumer thread calls `WSSubject.setRunAsSubject(subject)`
+   - This establishes the security identity for all subsequent work
+   - Liberty's ManagedExecutorService will inherit this identity
+
+4. **Message Processing is Offloaded**
+   - Each message in the batch is wrapped in a `CICSTransactionRunnable`
+   - The runnable is submitted to Liberty's `ManagedExecutorService`
+   - This ensures the processing happens on a CICS-aware thread
+
+5. **CICS Transaction Executes**
+   - The `CICSTransactionRunnable.run()` method executes
+   - The transaction ID is determined by `getTranid()`, which looks up the topic in KafkaBatchConfig
+   - Business logic processes the message (in this sample, just logging)
+
+6. **User Stops Consumer**
+   - HTTP GET/POST to `/control/stop?topic=orders`
+   - Spring Kafka listener container is stopped
+   - Subject mapping is removed from the map
+
+### Multi-Topic Approach
+
+This sample demonstrates **per-topic listeners with individual lifecycle control**:
+
+```java
+@KafkaListener(id = "ordersListener", topics = "orders", ...)
+public void onOrdersBatch(List<ConsumerRecord<String, String>> batch) { ... }
+
+@KafkaListener(id = "test-topicListener", topics = "test-topic", ...)
+public void onTestBatch(List<ConsumerRecord<String, String>> batch) { ... }
 ```
 
-## Deploying CICS Bundles from Gradle or Maven
+**Why separate listeners?**
+- Each topic can be started/stopped independently
+- Different topics can use different CICS transaction IDs
+- Allows per-topic security contexts (different users for different topics)
+- Simplifies monitoring and troubleshooting
 
-Manually upload the ZIP file from the com.ibm.cicsdev.springboot.kafka.bundle/target or com.ibm.cicsdev.springboot.kafka.bundle/build/distributions directory to zFS.
-Unzip this ZIP file on zFS (e.g. ${JAVA_HOME}/bin/jar xf /path/to/bundle.zip).
-Create a CICS BUNDLE resource definition, setting the bundle directory attribute to the zFS location you just extracted to, and install it into the CICS region.
+**Transaction ID Mapping:**
+The `application.properties` file maps topics to transaction IDs:
+```properties
+cics.transaction.map.test-topic=KAFK
+cics.transaction.map.orders=KAF1
+```
 
-## Deploying CICS Bundles with CICS Explorer
-
-Copy and paste the built WAR from your target or build/libs directory into a Eclipse CICS bundle project and create a new WAR bundlepart that references the WAR file. Then deploy the CICS bundle project from CICS Explorer using the Export Bundle Project to z/OS UNIX File System wizard.
-
-## Deploying directly with Liberty's application configuration
-
-Manually upload the WAR file to zFS and add an <application> element to the Liberty server.xml to define the web application with access to all authenticated users. For example the following application element can be used to install a WAR, and grant access to all authenticated users if security is enabled.
-
-``` XML
-    <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
-        <application-bnd>
-            <security-role name="cics-user">
-                <special-subject type="ALL_AUTHENTICATED_USERS"/>
-            </security-role>
-        </application-bnd>
-    </application>
-```    
+If no mapping exists, the default transaction ID `CJSU` is used.
 
 ---
 
-## Running the sample
+## Security Models Explained
 
-1. Configure the Kafka connection details and credentials as required.
-2. Update the Liberty `server.xml` if needed (features, security configuration).
-3. Start the Liberty server and deploy the application.
+This sample provides **two alternative approaches** for managing security credentials. Choose the one that best fits your operational requirements.
 
-Kafka consumers will start on application-managed background threads during application initialisation.
+### Alternative A: Subject-Based RunAs Identity (Default - Implemented)
 
-Make the kafka consumer start/stop using - 
-```XML
-http://<url>/cics-java-liberty-springboot-kafka/control/start?topic=<topic-name> or http://<url>/cics-java-liberty-springboot-kafka/control/stop?topic=<topic-name>
-```
+**How it works:**
+1. User authenticates to Liberty
+2. `/control/start` captures the caller's Subject
+3. Consumer thread sets this Subject as its RunAs identity
+4. ManagedExecutorService inherits the identity
+5. CICS transactions run under this identity
 
----
+**Configuration:**
+- No special server.xml configuration needed
+- Security is established via the HTTP request
+- Each topic can have a different identity (different users call `/start`)
 
-### Logging Strategy: Java Util Logging (JUL)
+**Pros:**
+- Simple configuration
+- Flexible per-topic security
 
-The application uses **Java Util Logging (JUL)** exclusively.
-
-#### Why JUL?
-
-* Built into the JDK (no additional dependencies)
-* Integrated with Liberty’s logging infrastructure
-* Thread-safe and efficient
-* Appropriate for sample code where simplicity and clarity matter
-
-#### Why not `System.out.println` / `System.err.println`?
-
-* Not synchronised
-* Poor performance under concurrency
-* Bypasses Liberty logging configuration
-* Makes diagnostics harder in managed environments
-
-#### Why not Log4j / SLF4J / Logback?
-
-* Introduces unnecessary dependencies for a sample
-* Adds logging bridge and classloader complexity
-* Distracts from Liberty’s native logging model
-
-#### Important note on output
-
-By default, JUL output appears in messages.log when the console log level permits.
-
-Ensure the following JVM option is set:
-  -Dcom.ibm.ws.logging.console.log.level=INFO
-
-This is documented intentionally so users understand Liberty’s logging behaviour.
+**Code Location:**
+- `KafkaController.start()` - Captures Subject
+- `KafkaConsumerService.handleBatch()` - Sets RunAs Subject
 
 ---
 
-## Security Model Demonstrated
+### Alternative B: authData-Based Identity with Programmatic Login (Alternative - Not Active by Default)
 
-This sample demonstrates explicit, application-managed security identity propagation for Kafka consumer threads running in WebSphere Liberty.
-Kafka consumers execute on application-managed background threads, so security identity must be established explicitly rather than being inherited from a container-managed request thread.
+**How it works:**
+1. Credentials are stored in Liberty's `server.xml` as `<authData>`
+2. Password is AES-encrypted using a key from a RACF keyring
+3. Application performs **programmatic JAAS login** using these credentials via `LoginManager`
+4. Resulting **Subject** is obtained and used the same way as Alternative A
+5. This Subject is then set as RunAs identity on consumer threads (same mechanism as Alternative A)
 
-Two supported approaches are documented:
+**Configuration Required:**
 
-- Option A: Subject-based RunAs identity (default)
-- Option B: authData-based identity (alternative)
+1. **Create the RACF key ring and certificates**
 
-Only one option should be used at a time.
-
-Option A: Subject-Based RunAs Identity (Default)
-
-This is the default approach implemented in the sample code. The application explicitly establishes a RunAs identity on Kafka consumer threads using Liberty security APIs.
-
-Key characteristics:
-
-A Subject representing the service identity is obtained during application initialisation.
-The identity is applied using WSSubject.setRunAsSubject(subject).
-The RunAs subject is set once per consumer thread and reused for subsequent processing.
-Previous identity state is captured and managed explicitly.
-
-This approach:
-
-* Works well with long-lived Kafka consumer threads
-* Provides full control over credentials per topic
-* Supports **“service ID per topic”** models
-* Makes identity propagation explicit and observable
-
-Option B: authData-Based Identity (Alternative)
-
-As an alternative to Subject-based RunAs identity, the sample can be configured to use Liberty authData to associate credentials with outbound Kafka connections.
-
-In this model:
-
-* Service credentials are defined declaratively in server.xml
-* The application references the configured authData by name
-* Liberty manages credential lookup and association
-
-This approach:
-
-* Centralises credential management in server configuration
-* Reduces application-level security handling
-* Is preferred when credentials must not appear in application code
-* Aligns well with operationally managed environments
-
-server.xml configuration (Option B only)
-
-Option B only: authData-based Kafka credentials        
-
-```XML
-<server>
-  <featureManager>
-    <feature>appSecurity-5.0</feature>
-    <feature>cicsts:security-1.0</feature>
-    <feature>concurrent-3.0</feature>
-    <feature>servlet-6.0</feature>
-    <feature>jdbc-4.3</feature>
-    <feature>passwordUtilities-1.0</feature>
-    <feature>zosPasswordEncryptionKey-1.0</feature>
-  </featureManager>
-  
-
-  <!-- Obtain AES key from RACF key ring at runtime -->
-  <zosPasswordEncryptionKey
-      keyring="safkeyring:///YOUR.KEYRING"
-      type="JCERACFKS"
-      label="Liberty"/>
-      
-      
-  <!-- (Optional) Use RACF key ring as SSL keystore -->
-  <keyStore id="defaultKeyStore"
-            fileBased="false"
-            type="JCERACFKS"
-            location="safkeyring:///YOUR.KEYRING"
-            password="password"/>
-
-  <!-- Credentials alias (AES-protected) -->
-  <authData id="cics_Auth_Id" user="<user_id>" password="{aes}..."/>
-
-</server>
-
-```
--  Create the RACF key ring and certificates (label = `Liberty`)
-
-> Run these TSO commands with appropriate IDs and DNs for your environment.
-> YOUR.KEYRING is the generic value for keyring.
+Run these TSO commands with appropriate IDs and DNs for your environment.
+`YOUR.KEYRING` is the generic placeholder for your keyring name.
 
 ```tso
 /* Create key ring (owned by Liberty STC user, e.g., <user_id>) */
-RACDCERT ADDRING(YOUR.KEYRING) ID(<user_id>)           
+RACDCERT ADDRING(YOUR.KEYRING) ID(<user_id>)
 
 /* (Optional) Create a CERTAUTH root CA */
 RACDCERT GENCERT CERTAUTH +
@@ -340,23 +278,47 @@ RACDCERT ID(<user_id>) CONNECT(ID(<user_id>) LABEL('Liberty') RING(YOUR.KEYRING)
 
 /* Verify ring contents */
 RACDCERT LISTRING(YOUR.KEYRING) ID(<user_id>)
-                                                                          
-    Digital ring information for user IN00501:                                  
-                                                                                
-      Ring:                                                                     
-          >YOUR.KEYRING<                                                      
-      Certificate Label Name             Cert Owner     USAGE      DEFAULT      
-      --------------------------------   ------------   --------   -------      
-      LIBERTY.CA                            CERTAUTH    CERTAUTH     NO         
-      Liberty                            ID(<user_id>)    PERSONAL     YES 
-
 ```
 
-Reference: JCERACFKS/JCECCARACFKS examples and ring setup [IBM Docs](https://www.ibm.com/docs/en/was-liberty/nd?topic=ssl-configuring-keyring-based-keystore).
+**Expected output:**
+```
+Digital ring information for user <user_id>:
 
-Generate the AES‑encoded password with `securityUtility` (key from RACF)
+  Ring:
+      >YOUR.KEYRING<
+  Certificate Label Name             Cert Owner     USAGE      DEFAULT
+  --------------------------------   ------------   --------   -------
+  LIBERTY.CA                            CERTAUTH    CERTAUTH     NO
+  Liberty                            ID(<user_id>)  PERSONAL     YES
+```
 
-From `${wlp.install.dir}/wlp/bin`, or from SSH shell on zFS to the same, run:
+**Reference:** [IBM Docs - JCERACFKS/JCECCARACFKS keyring setup](https://www.ibm.com/docs/en/was-liberty/nd?topic=ssl-configuring-keyring-based-keystore)
+
+2. **Enable features in server.xml:**
+```xml
+<feature>passwordUtilities-1.0</feature>
+<feature>zosPasswordEncryptionKey-1.0</feature>
+```
+
+3. **Configure RACF keyring in server.xml:**
+```xml
+<!-- Obtain AES key from RACF key ring at runtime -->
+<zosPasswordEncryptionKey
+    keyring="safkeyring:///YOUR.KEYRING"
+    type="JCERACFKS"
+    label="Liberty"/>
+
+<!-- (Optional) Use RACF key ring as SSL keystore -->
+<keyStore id="defaultKeyStore"
+          fileBased="false"
+          type="JCERACFKS"
+          location="safkeyring:///YOUR.KEYRING"
+          password="password"/>
+```
+
+4. **Generate AES-encoded password with `securityUtility` (key from RACF)**
+
+From `${wlp.install.dir}/wlp/bin`, or from SSH shell on zFS:
 
 ```bash
 securityUtility encode \
@@ -365,20 +327,689 @@ securityUtility encode \
   --keyringType=JCERACFKS \
   --keyLabel=Liberty \
   "YourRacfPassword"
-
 ```
 
-<!-- Do not configure authData when using Option A -->
+This will output something like:
+```
+{aes}ARI673meZr9vyGHN8xKJdLx9...
+```
 
-Kafka client configuration should reference the above authData entry when this option is selected.
+5. **Define authData in server.xml:**
+```xml
+<!-- Credentials alias (AES-protected) -->
+<authData id="cicsSAF" user="<user_id>" password="{aes}ARI673meZr9vy...."/>
+```
+
+6. **Activate LoginManager in code:**
+Uncomment in `KafkaController.java`:
+```java
+@Autowired(required = false)
+private LoginManager loginManager;
+```
+
+Then use in `start()` method:
+```java
+Subject subject = loginManager.getSubject();
+```
+
+**Pros:**
+- Credentials managed centrally in server.xml
+- No clear-text passwords in configuration
+- Suitable for automated/service accounts
+- Aligns with enterprise security policies
+
+**Cons:**
+- More complex setup (RACF keyring required)
+- Requires z/OS security administrator involvement
+
+**Code Location:**
+- `LoginManager.java` - Performs programmatic login
+- `KafkaController.start()` - Would use LoginManager instead of WSSubject.getCallerSubject()
+
+---
+
+## Before You Start: Files to Modify
+
+Before building and deploying this sample, you **must** customize the following files with your environment-specific values:
+
+### 1. Kafka Connection Configuration
+**File:** `cics-java-liberty-springboot-kafka-app/src/main/resources/application.properties`
+
+**What to change:**
+```properties
+# Replace with your Kafka broker address
+spring.kafka.bootstrap-servers=<YOUR_KAFKA_BROKER_IP>:9092
+
+# Optional: Change consumer group ID if needed
+spring.kafka.consumer.group-id=<YOUR_CONSUMER_GROUP>
+
+# Add topic-to-transaction mappings
+cics.transaction.map.<your-topic>=<YOUR_TRANID>
+```
+
+**Example:**
+```properties
+spring.kafka.bootstrap-servers=9.109.246.51:9092
+spring.kafka.consumer.group-id=my-consumer-group
+cics.transaction.map.test-topic=KAFK
+cics.transaction.map.orders=KAF1
+```
+
+---
+
+### 2. Liberty Server Configuration
+**File:** `etc/config/liberty/server.xml`
+
+**For Alternative A (Subject-based - default):**
+- Verify that the following entry has been included in the configuration after CICS Initialization (auto-added if SEC=YES in SIT)
+
+```xml
+<feature>cicsts:security-1.0</feature>
+``` 
+- Verify application location matches deployment path
+
+**For Alternative B (authData-based):**
+- See detailed setup instructions in [Security Models Explained - Alternative B](#alternative-b-authdata-based-identity-with-programmatic-login-alternative---not-active-by-default)
+- Requires: RACF keyring, AES-encrypted password, authData configuration
+
+---
+
+### 3. Build Configuration (Optional)
+**Files:**
+- `cics-java-liberty-springboot-kafka-cicsbundle/build.gradle`
+- `cics-java-liberty-springboot-kafka-cicsbundle/pom.xml`
+
+**When is this needed?**
+Only if using **Method 1: CICS Bundle Deployment** (see [Deploying to CICS](#deploying-to-cics)). This tells the CICS bundle plugins which Liberty JVM server will run your application.
+
+**What to change:**
+```gradle
+// Gradle: Set your target JVM server name
+cics.jvmserver = '<YOUR_JVMSERVER_NAME>'  // e.g., 'DFHWLP'
+```
+
+```xml
+<!-- Maven: Set your target JVM server name -->
+<defaultjvmserver><YOUR_JVMSERVER_NAME></defaultjvmserver>  <!-- e.g., DFHWLP -->
+```
+
+**Note:** If using Method 2 (CICS Explorer) or Method 3 (Direct Liberty), you can skip this step.
+
+---
+
+### 4. Java Code (Only for Alternative B)
+
+**Required changes:**
+- Uncomment `LoginManager` in `KafkaController.java`
+- Update `AUTH_DATA_ID` in `LoginManager.java` to match your server.xml
+
+**See detailed instructions in:** [Security Models Explained - Alternative B, Step 6](#alternative-b-authdata-based-identity-with-programmatic-login-alternative---not-active-by-default)
+
+---
+
+### Summary Checklist
+
+Before building:
+- [ ] Updated `application.properties` with Kafka broker address
+- [ ] Configured topic-to-transaction mappings in `application.properties`
+- [ ] Chose security Alternative (A or B)
+- [ ] If Alternative A: Updated `server.xml` with features
+- [ ] If Alternative B: Created RACF keyring and generated AES password
+- [ ] If Alternative B: Updated `server.xml` with features, keyring and authData
+- [ ] If Alternative B: Uncommented LoginManager in `KafkaController.java`
+- [ ] Updated JVM server name in build files (if using CICS bundle deployment)
+
+---
+
+## Requirements
+
+### Workstation Requirements
+* **Java:** Java 17 or later
+* **Build Tools:**
+  - **Gradle:** Recommended: 8.0+ - included via wrapper
+  - **Maven:** Recommended: 3.9.0+ - included via wrapper
+* **IDE (Optional):**
+  - Eclipse with IBM CICS SDK for Java EE, Jakarta EE and Liberty
+  - IntelliJ IDEA, VS Code, or any IDE with Gradle/Maven support
+  - Command line (no IDE required if using wrappers)
+
+### z/OS Requirements
+* **CICS TS:** Requires APAR PHnnnn for V6.3.
+  <!-- TODO: Update APAR number when available.-->
+* **WebSphere Liberty:** Included with CICS
+* **Java:** IBM Semeru Runtime 17 or later on z/OS
+
+### Network Requirements
+* Connectivity from z/OS to Kafka broker(s)
+* HTTP/HTTPS access to Liberty server for REST API calls
+
+---
+
+## Project Structure
+
+```
+cics-java-liberty-springboot-kafka/
+├── README.md                                    # This file
+├── LICENSE                                      # EPL 2.0 license
+├── build.gradle                                 # Root Gradle build
+├── settings.gradle                              # Gradle multi-project settings
+├── pom.xml                                      # Root Maven POM
+├── gradlew / gradlew.bat                        # Gradle wrapper scripts
+├── mvnw / mvnw.cmd                              # Maven wrapper scripts
+│
+├── cics-java-liberty-springboot-kafka-app/      # Main application
+│   ├── build.gradle                             # App-level Gradle build
+│   ├── pom.xml                                  # App-level Maven POM
+│   └── src/main/
+│       ├── java/com/ibm/cicsdev/springboot/kafka
+│       │   ├── KafkaApplication.java            # Spring Boot entry point
+│       │   ├── KafkaController.java             # REST API for start/stop
+│       │   ├── KafkaConsumerService.java        # Kafka listeners per topic
+│       │   ├── KafkaMessageProcessor.java       # Async message processing
+│       │   ├── KafkaBatchConfig.java            # Topic-to-transaction mapping
+│       │   ├── LoginManager.java                # Optional: authData login
+│       │   └── ServletInitializer.java          # WAR deployment support
+│       ├── resources/
+│       │   └── application.properties           # Kafka & Spring config
+│       └── webapp/WEB-INF/
+│           └── web.xml                          # Web app descriptor
+│
+├── cics-java-liberty-springboot-kafka-cicsbundle/  # CICS bundle (Gradle/Maven)
+│   ├── build.gradle                             # Bundle Gradle build
+│   ├── pom.xml                                  # Bundle Maven POM
+│   └── src/main/bundleParts/
+│       └── KAFK.transaction                     # CICS transaction definition
+│
+├── etc/config/
+│   ├── liberty/
+│   │   └── server.xml                           # Liberty server template
+│   └── cics_bundle_project/
+│       └── cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
+│           └── ...                              # CICS Explorer bundle project
+│
+└── gradle/ & .mvn/                              # Wrapper support files
+```
+
+---
+
+## Configuration Guide
+
+### Verify CICS BOM Version
+
+Ensure the correct CICS TS bill of materials (BOM) is specified for your target CICS release.
+
+**Gradle** (`build.gradle`):
+```gradle
+compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:6.3-20250905155520")
+```
+
+**Maven** (`pom.xml`):
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.ibm.cics</groupId>
+            <artifactId>com.ibm.cics.ts.bom</artifactId>
+            <version>6.3-20250905155520</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+Browse available versions at [Maven Central](https://search.maven.org/search?q=g:com.ibm.cics%20AND%20a:com.ibm.cics.ts.bom).
+
+---
+
+## Building the Sample
+
+You can build using Gradle, Maven, or Eclipse. The wrappers are pre-configured with compatible versions.
+
+### Option 1: Building with Gradle
+
+**From the root directory:**
+
+Linux/Mac:
+```bash
+./gradlew clean build
+```
+
+Windows:
+```cmd
+gradlew.bat clean build
+```
+
+**Output:**
+- WAR file: `cics-java-liberty-springboot-kafka-app/build/libs/cics-java-liberty-springboot-kafka-app.war`
+- CICS bundle ZIP: `cics-java-liberty-springboot-kafka-cicsbundle/build/distributions/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0.zip`
+
+**Note:** In Eclipse, the `build` directory may be hidden. To view it: Package Explorer → ⋮ menu → Filters → Uncheck "Gradle build folder".
+
+---
+
+### Option 2: Building with Maven
+
+**From the root directory:**
+
+Linux/Mac:
+```bash
+./mvnw clean package
+```
+
+Windows:
+```cmd
+mvnw.cmd clean package
+```
+
+**Output:**
+- WAR file: `cics-java-liberty-springboot-kafka-app/target/cics-java-liberty-springboot-kafka-app.war`
+- CICS bundle ZIP: `cics-java-liberty-springboot-kafka-cicsbundle/target/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0.zip`
+
+---
+
+### Option 3: Building with Eclipse
+
+1. **Clone and Import Repository:**
+   - File → Import → Git → Projects from Git → Clone URI
+   - Enter the repository URL
+   - Ensure "Import existing Eclipse projects" box is checked
+   - Complete the wizard to clone and import the projects
+
+2. **Resolve Build Path (if needed):**
+   - Right-click project → Properties → Java Build Path → Libraries
+   - Add Library → CICS with Enterprise Java and Liberty
+   - Select appropriate CICS and Java EE versions
+
+3. **Build:**
+   - Right-click `cics-java-liberty-springboot-kafka` → Run As → Gradle Build (or Maven Build)
+   - Goals: `clean build` (Gradle) or `clean package` (Maven)
+
+**Tip:** If switching between Gradle and Maven in Eclipse, you may need to manually remove duplicate "Project Dependencies" entries from the build path.
+
+---
+
+## Deploying to CICS
+
+### Method 1: CICS Bundle Deployment
+
+1. **Upload the bundle ZIP to zFS:**
+   ```bash
+   # From your workstation (using secure copy)
+   scp cics-java-liberty-springboot-kafka-cicsbundle/build/distributions/*.zip user@zos:/path/to/bundles/
+   ```
+   
+   **Note:** `scp` is a standard Unix/Linux command for secure file transfer. Replace `user@zos` with your z/OS credentials and `/path/to/bundles/` with your target directory.
+
+2. **Extract on z/OS:**
+   ```bash
+   # On z/OS
+   cd /path/to/bundles
+   jar xf cics-java-liberty-springboot-kafka-cicsbundle-1.0.0.zip
+   ```
+
+3. **Define and install the bundle:**
+   See [Common Bundle Installation Steps](#common-bundle-installation-steps) below.
+
+---
+
+### Method 2: CICS Explorer Deployment
+
+This method uses IBM CICS Explorer (an Eclipse-based IDE) to create a CICS bundle and deploy it directly to z/OS. This approach is ideal for developers who prefer a GUI-based deployment workflow and want integrated tooling for CICS development.
+
+**Prerequisites:**
+- IBM CICS Explorer installed on your workstation
+- CICS Explorer configured with connection to your z/OS system
+- SSH/SFTP access to z/OS UNIX System Services (USS)
+- CICS region configured and running
+
+#### Step 1: Review CICS Bundle Project in Eclipse
+
+A CICS bundle is a deployment package that can contain multiple resources (WARs, JARs, OSGi bundles, etc.) and their metadata.
+The bundle project is already provided in the repository (imported when you cloned the repo).
+
+1. **Locate the Bundle Project:**
+    In Project Explorer, locate the imported bundle project
+    (e.g., cics-java-liberty-springboot-kafka-cicsbundle).
+
+    Look into the project to verify its structure and contents.
+
+2. **Verify WAR Bundle Part Configuration:**
+    - Locate the .warbundle file
+    - Confirm the following:
+        JVM server is correctly specified (e.g., DFHWLP)
+        WAR file path points to the correct application artifact
+
+3. **Review Generated Files:**
+   
+   The bundle project now contains:
+   ```
+   cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
+   ├── META-INF/
+   │   └── cics.xml          # Bundle manifest (defines bundle contents)
+   ├── .project              # Eclipse project file
+   └── cics-java-liberty-springboot-kafka.warbundle  # WAR bundle part descriptor
+   ```
+
+   **Understanding cics.xml:**
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <manifest xmlns="http://www.ibm.com/xmlns/prod/cics/bundle" bundleMajorVer="1" bundleMicroVer="0" bundleMinorVer="0" bundleRelease="0" bundleVersion="1" id="cics-java-liberty-springboot-kafka-cicsbundle">
+      <meta_directives>
+         <timestamp>2026-03-17T12:06:14.389297Z</timestamp>
+      </meta_directives>
+      <define name="cics-java-liberty-springboot-kafka" path="cics-java-liberty-springboot-kafka.warbundle" type="http://www.ibm.com/xmlns/prod/cics/bundle/WARBUNDLE"/>
+   </manifest>
+   ```
+   - `id`: Unique identifier for this bundle in CICS
+   - `define`: References the WAR bundle part
+
+   **Understanding .warbundle file:**
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <warbundle symbolicname="cics-java-liberty-springboot-kafka"
+              jvmserver="DFHWLP">
+       <war path="cics-java-liberty-springboot-kafka.war"/>
+   </warbundle>
+   ```
+   - `symbolicname`: Name used to reference this WAR in CICS
+   - `jvmserver`: Target Liberty JVM server name
+   - `war path`: Relative path to the actual WAR file
+
+#### Step 2: Export Bundle to z/OS UNIX File System (zFS)
+
+This step deploys your bundle to z/OS and makes it available to CICS.
+
+1. **Initiate Export:**
+   - In **Project Explorer**, right-click on your bundle project
+   - Select **Export Bundle Project to z/OS UNIX File System**
+   - Click **Next**
+
+2. **Specify Bundle Deployment Location:**
+   
+   Choose where on z/OS to deploy the bundle:
+   - **Target directory**: `/u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle_1.0.0`
+   
+   **Important Path Considerations:**
+   - The directory will be created if it doesn't exist
+
+   Click **Finish** to start the export.
+
+   Ensure that the CICS region user has read and write access to the bundle directory structure.
+
+#### Step 3: Define and Install the Bundle in CICS
+
+After export, define and install the bundle in your CICS region. See [Common Bundle Installation Steps](#common-bundle-installation-steps) below.
+
+#### Step 4: Verify Deployment
+
+1. **Check Liberty Messages:**
+   - View Liberty server logs
+   - Look for:
+   ```
+   [AUDIT   ] CWWKT0016I: Web application available (default_host):
+              http://hostname:9080/cics-java-liberty-springboot-kafka/
+   ```
+
+2. **Verify in CICS Explorer:**
+   - Navigate to **Bundle Definitions** → `KFKABNDL`
+   - Status should show: **Enabled** and **Installed**
+
+---
+
+### Method 3: Direct Liberty Application Deployment
+
+1. **Upload WAR to zFS:**
+   ```bash
+   # From your workstation (using secure copy)
+   scp cics-java-liberty-springboot-kafka-app/build/libs/*.war user@zos:/path/to/liberty/apps/
+   ```
+   
+   **Note:** Replace `user@zos` with your z/OS credentials and `/path/to/liberty/apps/` with your Liberty apps directory.
+
+2. **Add to server.xml:**
+   ```xml
+   <application location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war" type="war">
+       <application-bnd>
+           <security-role name="cics-user">
+               <special-subject type="ALL_AUTHENTICATED_USERS"/>
+           </security-role>
+       </application-bnd>
+   </application>
+   ```
+
+3. **Restart Liberty or refresh configuration**
+
+---
+
+### Common Bundle Installation Steps
+
+These steps apply to both Method 1 and Method 2 after the bundle is on z/OS.
+
+**Option A: Using CEDA Commands**
+
+1. **Define the Bundle:**
+   ```
+   CEDA DEFINE BUNDLE(KFKABNDL)
+        GROUP(MYGROUP)
+        BUNDLEDIR(/u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0)
+        STATUS(ENABLED)
+   ```
+
+2. **Install the Bundle:**
+   ```
+   CEDA INSTALL BUNDLE(KFKABNDL) GROUP(MYGROUP)
+   ```
+
+3. **Enable (if needed):**
+   ```
+   CEDA SET BUNDLE(KFKABNDL) ENABLED
+   ```
+
+**Option B: Using CICS Explorer UI**
+
+1. Navigate to **CICS SM** (Systems Management) view
+2. Expand your CICS region → **Bundle Definitions**
+3. Right-click → **New** → **Bundle Definition**
+4. Fill in:
+   - Name: `KFKABNDL`
+   - Group: `MYGROUP`
+   - Bundle Directory: `/u/cicsts/bundles/cics-java-liberty-springboot-kafka-cicsbundle-1.0.0`
+   - Status: `Enabled`
+5. Save and right-click → **Install**
+
+**Verify Installation:**
+- Check Liberty messages.log for application startup
+- In CICS Explorer: Bundle Definitions → `KFKABNDL` should show **Enabled** and **Installed**
+
+---
+
+## Running the Sample
+
+### Step 1: Verify Deployment
+
+Check Liberty messages.log for successful application start:
+```
+[AUDIT   ] CWWKT0016I: Web application available (default_host): http://hostname:9080/cics-java-liberty-springboot-kafka/
+```
+
+---
+
+### Step 2: Start a Kafka Consumer
+
+**Alternative A (Subject-Based - Default):**
+
+Using curl with authentication:
+```bash
+curl -X POST "http://hostname:9080/cics-java-liberty-springboot-kafka/control/start?topic=test-topic" \
+     -u username:password
+```
+
+Using a browser (will prompt for credentials):
+```
+http://hostname:9080/cics-java-liberty-springboot-kafka/control/start?topic=test-topic
+```
+
+**Alternative B (authData-Based):**
+
+Using curl (no authentication required - uses programmatic login):
+```bash
+curl -X POST "http://hostname:9080/cics-java-liberty-springboot-kafka/control/start?topic=test-topic"
+```
+
+**Expected Response (both alternatives):**
+```
+Started listener for topic=test-topic
+```
+
+---
+
+### Step 3: Verify Message Processing
+
+Check Liberty messages.log:
+```
+[INFO] Received message from topic test-topic: Hello from Kafka!
+[INFO] Task USERID = TESTUSER
+[INFO] DEBUG: Topic = test-topic
+[INFO] DEBUG: Finished processing Kafka message in thread: Default Executor-thread-1 Hello from Kafka!
+```
+
+---
+
+### Step 4: Stop the Consumer
+
+**Alternative A (Subject-Based - Default):**
+```bash
+curl -X POST "http://hostname:9080/cics-java-liberty-springboot-kafka/control/stop?topic=test-topic" \
+     -u username:password
+```
+
+**Alternative B (authData-Based):**
+```bash
+curl -X POST "http://hostname:9080/cics-java-liberty-springboot-kafka/control/stop?topic=test-topic"
+```
+
+**Expected Response (both alternatives):**
+```
+Stopped listener for topic=test-topic
+```
+
+---
+
+### Multiple Topics
+
+You can run multiple consumers simultaneously:
+```bash
+# Start consumer for orders topic
+curl -X POST ".../control/start?topic=orders" -u username:pass
+
+# Start consumer for test-topic
+curl -X POST ".../control/start?topic=test-topic" -u username:pass
+
+# Each runs independently with its own transaction ID
+```
+
+---
+
+## Troubleshooting
+
+### Issue: "Failed to set RunAsSubject"
+
+**Symptom:** WSSecurityException in logs
+
+**Cause:** Subject is null or invalid
+
+**Solution:**
+- Verify user is authenticated when calling `/start`
+- Check Liberty security configuration
+- For Alternative B: Verify authData is configured correctly
+
+---
+
+### Issue: AES password decryption fails (Alternative B)
+
+**Symptom:** "Failed to decrypt password" or login failure
+
+**Cause:** RACF keyring or AES key misconfigured
+
+**Solution:**
+1. Verify keyring exists: `RACDCERT LISTRING(<keyring>) ID(<userid>)`
+2. Verify certificate label matches: `label="Liberty"`
+3. Regenerate AES password with correct keyring path
+4. Ensure Liberty user has access to keyring
+
+---
+
+### Logging and Diagnostics
+
+**Enable detailed logging in server.xml:**
+```xml
+<logging traceSpecification="*=info:com.ibm.cicsdev.springboot.kafka.*=all"/>
+```
+
+**Key log locations:**
+- Liberty: `${wlp.user.dir}/servers/<server>/logs/messages.log`
+- CICS: MSGUSR, CSSL transient data queues
+- Kafka: Check broker logs if messages aren't being produced
+
+---
+
+## Logging Strategy
+
+This sample uses **Java Util Logging (JUL)** for simplicity and integration with Liberty.
+
+**Why JUL?**
+- Built into JDK (no dependencies)
+- Integrates with Liberty's logging infrastructure
+- Thread-safe and efficient
+
+**Why not System.out.println?**
+- Not thread-safe
+- Poor performance under concurrency
+- Bypasses Liberty logging configuration
+
+**Why not Log4j/SLF4J?**
+- Adds unnecessary dependencies for a sample
+- Introduces classloader complexity
+- JUL is sufficient for this use case
+
+**Viewing logs:**
+By default, JUL output appears in `messages.log`. Ensure this JVM option is set:
+```
+-Dcom.ibm.ws.logging.console.log.level=INFO
+```
 
 ---
 
 ## License
 
-This project is licensed under Eclipse Public License - v 2.0.
+This project is licensed under **Eclipse Public License - v 2.0**.
 
-Usage terms
-By downloading, installing, and/or using this sample, you acknowledge that separate license terms may apply to any dependencies that might be required as part of the installation and/or execution and/or automated build of the sample, including the following IBM license terms for relevant IBM components:
+### Usage Terms
 
-• IBM CICS development components terms: https://www.ibm.com/support/customer/csol/terms/?id=L-ACRR-BBZLGX
+By downloading, installing, and/or using this sample, you acknowledge that separate license terms may apply to any dependencies required for installation, execution, or automated builds, including:
+
+**IBM CICS development components:**
+https://www.ibm.com/support/customer/csol/terms/?id=L-ACRR-BBZLGX
+
+---
+
+## Additional Resources
+
+- [CICS Liberty Documentation](https://www.ibm.com/docs/en/cics-ts/latest?topic=liberty-cics)
+- [Spring Boot Kafka Documentation](https://spring.io/projects/spring-kafka)
+- [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
+
+---
+
+## Contributing
+
+This is a sample project maintained by IBM CICS development. For issues or questions:
+- Open an issue on GitHub
+- Contact IBM Support for CICS-related questions
+
+---
+
+**Last Updated:** March 2026
+**Version:** 1.0.0
+**Maintainers:** See MAINTAINERS.md

@@ -16,7 +16,7 @@
     <!-- ================================================================ -->
     <!-- Project Coordinates                                              -->
     <!-- ================================================================ -->
-    <artifactId>com.ibm.cicsdev.springboot.kafka.app</artifactId>
+    <artifactId>cics-java-liberty-springboot-kafka-app</artifactId>
     <packaging>war</packaging>
     <name>CICS Kafka Springboot - Application</name>
 

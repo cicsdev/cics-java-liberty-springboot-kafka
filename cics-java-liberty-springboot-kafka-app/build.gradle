@@ -8,7 +8,7 @@ plugins
     id 'idea'    
 }
 
-group = 'com.ibm.cicsdev'
+group = 'com.ibm.cicsdev.springboot'
 version = '1.0.0'
 
 // ============================================================================
@@ -42,7 +42,7 @@ eclipse
 
 repositories
 {
-    mavenCentral()                
+	mavenCentral()                
 }
 
 dependencies 
@@ -69,4 +69,3 @@ dependencies
     // Compile against, but don't include JCICS in the final build (no need for version because we have BOM)
     compileOnly("com.ibm.cics:com.ibm.cics.server")       
 }
-

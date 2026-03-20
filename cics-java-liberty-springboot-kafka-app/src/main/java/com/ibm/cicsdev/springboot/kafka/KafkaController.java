@@ -45,7 +45,12 @@ public class KafkaController
 
     /**
      * Start consumption for a single topic under the caller's Liberty Subject (JWT/OIDC/Basic).
-     * 
+     *
+     * <p>
+     * The Subject represents the authenticated user who called /start. This identity will be used for
+     * all CICS transactions processing messages from this topic. Different topics can run under different identities
+     * (different users call /start).
+     *
      * @param topic
      *            Name of the Kafka topic to start consuming
      * @return Response indicating success or failure
@@ -61,7 +66,7 @@ public class KafkaController
             return ResponseEntity.badRequest().body("ERROR: missing required query parameter 'topic'");
         }
 
-        // Capture the caller’s Liberty Subject
+        // 1. Capture the authenticated user's Subject
         Subject subject = null;
         try
         {
@@ -80,7 +85,7 @@ public class KafkaController
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ERROR: unauthenticated request");
         }
 
-        // Capture Subject from the authenticated HTTP request
+        // 2. Store it for this topic
         topicSubjects.put(topic, subject);
 
         // Calculate the ID of the KafkaListener container

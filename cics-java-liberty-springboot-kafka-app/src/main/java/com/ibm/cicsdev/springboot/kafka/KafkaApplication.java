@@ -13,6 +13,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
+/**
+ * Spring Boot Entry Point for Kafka Consumer Application.
+ */
 @SpringBootApplication
 public class KafkaApplication
 {
