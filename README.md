@@ -464,7 +464,7 @@ Before building:
 ## Requirements
 
 ### Workstation Requirements
-* **Java:** IBM Semeru Runtime Open Edition 17 or later
+* **Java:** Java 17 or later
 * **Build Tools:**
   - **Gradle:** Recommended: 8.0+ - included via wrapper
   - **Maven:** Recommended: 3.9.0+ - included via wrapper
@@ -478,7 +478,6 @@ Before building:
   <!-- TODO: Update APAR number when available.-->
 * **WebSphere Liberty:** Included with CICS
 * **Java:** IBM Semeru Runtime 17 or later on z/OS
-* **Kafka:** Apache Kafka
 
 ### Network Requirements
 * Connectivity from z/OS to Kafka broker(s)
