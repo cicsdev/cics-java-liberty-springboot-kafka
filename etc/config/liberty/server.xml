@@ -6,7 +6,6 @@
         <feature>cicsts:security-1.0</feature>
 		<feature>concurrent-3.0</feature>
 		<feature>servlet-6.0</feature>
-		<feature>jdbc-4.3</feature>
         <!-- <feature>passwordUtilities-1.0</feature>
         <feature>zosPasswordEncryptionKey-1.0</feature> -->
 	</featureManager>
