@@ -1,6 +1,6 @@
 # cics-java-liberty-springboot-kafka
 
-[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/java.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/java.yaml)
+[![Build](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/build.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/build.yaml)
 
 ## Overview
 
