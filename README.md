@@ -1,6 +1,7 @@
 # cics-java-liberty-springboot-kafka
 
 [![Build](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/build.yaml/badge.svg)](https://github.com/cicsdev/cics-java-liberty-springboot-kafka/actions/workflows/build.yaml)
+[![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
 
 ## Overview
 
@@ -28,14 +29,17 @@ The sample is intended both as a runnable example and as an educational referenc
 7. [Configuration Guide](#configuration-guide)
 8. [Thread Pool Management and TCLASS Considerations](#thread-pool-management-and-tclass-considerations)
 9. [Building the Sample](#building-the-sample)
-10. [Deploying to CICS](#deploying-to-cics)
+10. [Deploying to a CICS Liberty JVM server](#deploying-to-a-cics-liberty-jvm-server)
    - [Method 1: Using a CICS Bundle](#method-1-using-a-cics-bundle)
    - [Method 2: Using CICS Explorer](#method-2-using-cics-explorer)
    - [Method 3: Direct Liberty Deployment](#method-3-direct-liberty-deployment)
    - [Common Bundle Installation Steps](#common-bundle-installation-steps)
 11. [Running the Sample](#running-the-sample)
 12. [Troubleshooting](#troubleshooting)
-13. [License](#license)
+13. [Logging Strategy](#logging-strategy)
+14. [License](#license)
+15. [Additional Resources](#additional-resources)
+16. [Contributing](#contributing)
 
 ---
 
@@ -421,7 +425,7 @@ cics.transaction.map.orders=KAF1
 - `cics-java-liberty-springboot-kafka-cicsbundle/pom.xml`
 
 **When is this needed?**
-Only if using **Method 1: CICS Bundle Deployment** (see [Deploying to CICS](#deploying-to-cics)). This tells the CICS bundle plugins which Liberty JVM server will run your application.
+Only if using **Method 1: CICS Bundle Deployment** (see [Deploying to a CICS Liberty JVM server](#deploying-to-a-cics-liberty-jvm-server)). This tells the CICS bundle plugins which Liberty JVM server will run your application.
 
 **What to change:**
 ```gradle
@@ -526,7 +530,7 @@ cics-java-liberty-springboot-kafka/
 │   │   └── server.xml                           # Liberty server template
 │   └── cics_bundle_project/
 │       └── cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
-│           └── ...                              # CICS Explorer bundle project
+│           └── ...                              # CICS Explorer Bundle Project
 │
 └── gradle/ & .mvn/                              # Wrapper support files
 ```
@@ -709,12 +713,12 @@ gradlew.bat clean build
 
 Linux/Mac:
 ```bash
-./mvnw clean package
+./mvnw clean verify
 ```
 
 Windows:
 ```cmd
-mvnw.cmd clean package
+mvnw.cmd clean verify
 ```
 
 **Output:**
@@ -738,15 +742,15 @@ mvnw.cmd clean package
 
 3. **Build:**
    - Right-click `cics-java-liberty-springboot-kafka` → Run As → Gradle Build (or Maven Build)
-   - Goals: `clean build` (Gradle) or `clean package` (Maven)
+   - Goals: `clean build` (Gradle) or `clean verify` (Maven)
 
 **Tip:** If switching between Gradle and Maven in Eclipse, you may need to manually remove duplicate "Project Dependencies" entries from the build path.
 
 ---
 
-## Deploying to CICS
+## Deploying to a CICS Liberty JVM server
 
-### Method 1: CICS Bundle Deployment
+### Method 1: CICS Bundle Plugin Deployment
 
 1. **Upload the bundle ZIP to zFS:**
    ```bash
@@ -768,7 +772,7 @@ mvnw.cmd clean package
 
 ---
 
-### Method 2: CICS Explorer Deployment
+### Method 2: CICS Explorer SDK Deployment
 
 This method uses IBM CICS Explorer (an Eclipse-based IDE) to create a CICS bundle and deploy it directly to z/OS. This approach is ideal for developers who prefer a GUI-based deployment workflow and want integrated tooling for CICS development.
 
@@ -781,10 +785,10 @@ This method uses IBM CICS Explorer (an Eclipse-based IDE) to create a CICS bundl
 #### Step 1: Review CICS Bundle Project in Eclipse
 
 A CICS bundle is a deployment package that can contain multiple resources (WARs, JARs, OSGi bundles, etc.) and their metadata.
-The bundle project is already provided in the repository (imported when you cloned the repo).
+The Bundle Project is already provided in the repository (imported when you cloned the repo).
 
 1. **Locate the Bundle Project:**
-    In Project Explorer, locate the imported bundle project
+    In Project Explorer, locate the imported Bundle Project
     (e.g., cics-java-liberty-springboot-kafka-cicsbundle).
 
     Look into the project to verify its structure and contents.
@@ -797,7 +801,7 @@ The bundle project is already provided in the repository (imported when you clon
 
 3. **Review Generated Files:**
    
-   The bundle project now contains:
+   The Bundle Project now contains:
    ```
    cics-java-liberty-springboot-kafka-cicsbundle-1.0.0/
    ├── META-INF/
@@ -836,7 +840,7 @@ The bundle project is already provided in the repository (imported when you clon
 This step deploys your bundle to z/OS and makes it available to CICS.
 
 1. **Initiate Export:**
-   - In **Project Explorer**, right-click on your bundle project
+   - In **Project Explorer**, right-click on your Bundle Project
    - Select **Export Bundle Project to z/OS UNIX File System**
    - Click **Next**
 
@@ -1125,6 +1129,6 @@ This is a sample project maintained by IBM CICS development. For issues or quest
 
 ---
 
-**Last Updated:** March 2026
+**Last Updated:** June 2026
 **Version:** 1.0.0
 **Maintainers:** See MAINTAINERS.md
