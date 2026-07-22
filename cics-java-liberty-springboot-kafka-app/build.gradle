@@ -1,6 +1,6 @@
 plugins 
 {
-    id 'org.springframework.boot' version '3.5.8'
+    id 'org.springframework.boot' version '3.5.16'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id 'eclipse'
@@ -16,7 +16,7 @@ version = '1.0.0'
 // ============================================================================
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(javaVersion)
+        languageVersion = JavaLanguageVersion.of(java_version)
     }
 }
 
@@ -28,16 +28,21 @@ war {
 }
 
 // Two versions of the WAR would be built, one for embedding into servers like Liberty (plain)
-// and a bootWAR which can run standalone and contains all the Tomcat and Spring Boot stuff 
+// and a bootWAR which can run standalone and contains all the Tomcat and Spring Boot stuff
 // we don't need bootWAR, so disable it.
 bootWar { enabled = false }
 
-// If in Eclipse, add Javadoc to the local project classpath
+// Eclipse: add Javadoc to classpath and pin WTP settings so Gradle Refresh doesn't reset them
 eclipse
 {
     classpath
     {
         downloadJavadoc = true
+    }
+    wtp
+    {
+        facet { facet name: 'jst.web', version: '6.0' }
+        component { contextPath = 'cics-java-liberty-springboot-kafka' }
     }
 }
 

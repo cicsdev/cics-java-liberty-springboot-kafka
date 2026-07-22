@@ -24,6 +24,6 @@ dependencies {
 // ============================================================================
 cicsBundle {
     build {
-        defaultJVMServer = project.findProperty('cics.jvmserver') ?: cicsJvmServer
+        defaultJVMServer = project.findProperty('cics.jvmserver') ?: 'DFHWLP'
     }
 }
