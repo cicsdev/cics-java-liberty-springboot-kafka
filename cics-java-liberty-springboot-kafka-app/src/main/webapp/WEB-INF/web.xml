@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee" version="5.0">
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
 
  <deny-uncovered-http-methods/>
  
@@ -12,7 +15,7 @@
       <http-method>POST</http-method>            
     </web-resource-collection>
     <auth-constraint>
-      <role-name>cics-user</role-name>
+      <role-name>cicsAllAuthenticated</role-name>
     </auth-constraint>
   </security-constraint>
     
@@ -22,6 +25,6 @@
   </login-config>
 
   <security-role>
-    <role-name>cics-user</role-name>
+    <role-name>cicsAllAuthenticated</role-name>
   </security-role>
 </web-app>
