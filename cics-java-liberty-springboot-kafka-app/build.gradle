@@ -54,7 +54,7 @@ repositories
 dependencies 
 {
 
-    // BOM: CICS TS V6.3
+    // BOM: CICS TS V6.1
     compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:${cicsBomVersion}")
 
     // Spring Boot Web-starter

@@ -383,7 +383,7 @@ Subject subject = loginManager.getSubject();
   - Command line (no IDE required if using wrappers)
 
 ### z/OS Requirements
-* **CICS TS:** V6.3 or later
+* **CICS TS:** V6.1 or later
 * **WebSphere Liberty:** Included with CICS
 * **Java:** IBM Semeru Runtime 17 or later on z/OS
 
@@ -666,9 +666,11 @@ Alternatively, download the sample as a [ZIP](https://github.com/cicsdev/cics-ja
 
 Before building this sample, verify that the correct CICS TS bill of materials (BOM) is specified for your target release of CICS. The BOM specifies a consistent set of artifacts, and adds information about their scope. You can browse the published versions of the CICS BOM at [Maven Central](https://mvnrepository.com/artifact/com.ibm.cics/com.ibm.cics.ts.bom).
 
+The sample is baselined on CICS TS V6.1. If you are running a later CICS release, update the BOM version to match — browse available versions at [Maven Central](https://mvnrepository.com/artifact/com.ibm.cics/com.ibm.cics.ts.bom).
+
 Gradle (`cics-java-liberty-springboot-kafka-app/build.gradle`):
 
-`compileOnly(enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:6.3-20250905155520"))`
+`compileOnly(enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:6.1-20250812133513-PH63856"))`
 
 Maven (`cics-java-liberty-springboot-kafka-app/pom.xml`):
 
@@ -678,7 +680,7 @@ Maven (`cics-java-liberty-springboot-kafka-app/pom.xml`):
     <dependency>
       <groupId>com.ibm.cics</groupId>
       <artifactId>com.ibm.cics.ts.bom</artifactId>
-      <version>6.3-20250905155520</version>
+      <version>6.1-20250812133513-PH63856</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -864,7 +866,7 @@ After export, define and install the bundle in your CICS region. See [Common Bun
        location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war"
        name="cics-java-liberty-springboot-kafka" type="war">
        <application-bnd>
-           <security-role name="cicsAllAuthenticated">
+           <security-role name="cics-user">
                <special-subject type="ALL_AUTHENTICATED_USERS"/>
            </security-role>
        </application-bnd>
