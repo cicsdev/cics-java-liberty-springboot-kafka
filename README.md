@@ -866,7 +866,7 @@ After export, define and install the bundle in your CICS region. See [Common Bun
        location="${server.config.dir}/apps/cics-java-liberty-springboot-kafka.war"
        name="cics-java-liberty-springboot-kafka" type="war">
        <application-bnd>
-           <security-role name="cics-user">
+           <security-role name="cicsAllAuthenticated">
                <special-subject type="ALL_AUTHENTICATED_USERS"/>
            </security-role>
        </application-bnd>

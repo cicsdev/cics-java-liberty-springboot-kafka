@@ -15,7 +15,7 @@
       <http-method>POST</http-method>            
     </web-resource-collection>
     <auth-constraint>
-      <role-name>cics-user</role-name>
+      <role-name>cicsAllAuthenticated</role-name>
     </auth-constraint>
   </security-constraint>
     
@@ -25,6 +25,6 @@
   </login-config>
 
   <security-role>
-    <role-name>cics-user</role-name>
+    <role-name>cicsAllAuthenticated</role-name>
   </security-role>
 </web-app>
