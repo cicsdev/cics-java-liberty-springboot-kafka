@@ -1,7 +1,6 @@
 name: Cleanup Old Workflow Runs
 
 permissions:
-  actions: write
   contents: read
 
 on:
@@ -12,8 +11,10 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
-      - name: Delete old workflow runs (including this workflow)
+      - name: Delete old workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ github.token }}
