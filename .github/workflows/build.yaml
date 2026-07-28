@@ -85,7 +85,7 @@ jobs:
       run: gradle clean build -Pjava_version=${{ matrix.jdk }}
 
   build-gradlew:
-    name: Build Gradle wrapper
+    name: Build Gradle Wrapper
     
     runs-on: ubuntu-latest
     strategy:
