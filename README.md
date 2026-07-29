@@ -384,6 +384,7 @@ Subject subject = loginManager.getSubject();
 
 ### z/OS Requirements
 * **CICS TS:** V6.1 or later
+* **APAR PH70996:** Must be applied to the CICS region
 * **WebSphere Liberty:** Included with CICS
 * **Java:** IBM Semeru Runtime 17 or later on z/OS
 
