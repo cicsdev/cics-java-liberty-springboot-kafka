@@ -1,11 +1,11 @@
-plugins 
+plugins
 {
     id 'org.springframework.boot' version '3.5.16'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id 'eclipse'
     id 'war'
-    id 'idea'    
+    id 'idea'
 }
 
 group = 'com.ibm.cicsdev.springboot'
@@ -14,8 +14,10 @@ version = '1.0.0'
 // ============================================================================
 // Java Configuration
 // ============================================================================
-java {
-    toolchain {
+java
+{
+    toolchain
+    {
         languageVersion = JavaLanguageVersion.of(java_version)
     }
 }
@@ -23,7 +25,8 @@ java {
 // ============================================================================
 // WAR Configuration
 // ============================================================================
-war {
+war
+{
     archiveFileName = 'cics-java-liberty-springboot-kafka.war'
 }
 
@@ -41,37 +44,42 @@ eclipse
     }
     wtp
     {
-        facet { facet name: 'jst.web', version: '6.0' }
-        component { contextPath = 'cics-java-liberty-springboot-kafka' }
+        facet
+        {
+            facet name: 'jst.web', version: '6.0'
+        }
+        component
+        {
+            contextPath = 'cics-java-liberty-springboot-kafka'
+        }
     }
 }
 
 repositories
 {
-	mavenCentral()                
+    mavenCentral()
 }
 
-dependencies 
+dependencies
 {
-
     // BOM: CICS TS V6.1
     compileOnly enforcedPlatform("com.ibm.cics:com.ibm.cics.ts.bom:${project.property('cics.bom.version')}")
 
     // Spring Boot Web-starter
     implementation("org.springframework.boot:spring-boot-starter-web")
-    
+
     // Don't include Tomcat in the runtime build, but do put it in WEB-INF so it can be run standalone as well as embedded
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat") 
-                
-	// Spring Boot Kafka client - with optimised removals
-    implementation("org.springframework.kafka:spring-kafka")         
-                           
-    // Jakarta EE 10 version of ManagedExecutorService we compiler against                            
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+
+    // Spring Boot Kafka client
+    implementation("org.springframework.kafka:spring-kafka")
+
+    // Jakarta EE 10 version of ManagedExecutorService we compile against
     compileOnly("jakarta.platform:jakarta.jakartaee-api:${jakartaVersion}")
-        
+
     // Liberty developer SPI/APIs - WSSubject, WSCallbackHandler (JAAS), AuthData
-    compileOnly("net.wasdev.maven.tools.targets:liberty-apis:${libertyApisVersion}")       
-                      
+    compileOnly("net.wasdev.maven.tools.targets:liberty-apis:${libertyApisVersion}")
+
     // Compile against, but don't include JCICS in the final build (no need for version because we have BOM)
-    compileOnly("com.ibm.cics:com.ibm.cics.server")       
+    compileOnly("com.ibm.cics:com.ibm.cics.server")
 }
